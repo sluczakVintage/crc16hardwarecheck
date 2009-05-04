@@ -56,5 +56,3 @@ set_global_assignment -name VHDL_FILE buforin.vhd
 set_global_assignment -name VHDL_FILE crccalc.vhd
 set_global_assignment -name VHDL_FILE buforout.vhd
 set_global_assignment -name VHDL_FILE comparator.vhd
-set_global_assignment -name SOURCE_FILE comparator.vhdbaka
-set_global_assignment -name SOURCE_FILE comparator.vhdbak
