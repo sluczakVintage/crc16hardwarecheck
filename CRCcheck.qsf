@@ -46,13 +46,19 @@ set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (VHDL)"
 set_global_assignment -name EDA_OUTPUT_DATA_FORMAT VHDL -section_id eda_simulation
 set_global_assignment -name USE_GENERATED_PHYSICAL_CONSTRAINTS OFF -section_id eda_blast_fpga
 set_global_assignment -name DEVICE_FILTER_SPEED_GRADE FASTEST
-set_global_assignment -name VHDL_FILE CRCcheck.vhd
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_global_assignment -name LL_ROOT_REGION ON -section_id "Root Region"
 set_global_assignment -name LL_MEMBER_STATE LOCKED -section_id "Root Region"
+set_global_assignment -name VHDL_FILE PCK_CRC16_D8.vhd
+set_global_assignment -name VHDL_FILE CRCcheck.vhd
 set_global_assignment -name VHDL_FILE buforin.vhd
 set_global_assignment -name VHDL_FILE crccalc.vhd
 set_global_assignment -name VHDL_FILE buforout.vhd
 set_global_assignment -name VHDL_FILE comparator.vhd
+set_global_assignment -name VECTOR_WAVEFORM_FILE CRCcheck.vwf
+set_global_assignment -name SEARCH_PATH "f:\\workspaces\\quartus\\crc16hardwarecheck"
+set_global_assignment -name MISC_FILE "F:/workspaces/Quartus/crc16hardwarecheck/CRCcheck.dpf"
+set_global_assignment -name VHDL_FILE dmux.vhd
+set_global_assignment -name VHDL_FILE flowcontrol.vhd

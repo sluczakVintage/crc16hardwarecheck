@@ -13,6 +13,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use work.PCK_CRC16_D8.all;
 
 entity buforin is
 
@@ -33,28 +34,31 @@ entity buforin is
 	);
 end buforin;
 
-
 -- Library Clause(s) (optional)
 -- Use Clause(s) (optional)
 
 architecture data_flow of buforin is
 
-	-- Declarations (optional)
+
+--component dmux4x8	
+--	port
+--	(
+--		input			: in std_logic_vector ( 7 downto 0 );
+--		sel				: in std_logic_vector( 1 downto 0 );
+--		o1, o2, o3, o4	: out std_logic_vector ( 7 downto 0 )
+--		
+--	);
+--end component;	
 
 begin
 
-	-- Process Statement (optional)
-
-	-- Concurrent Procedure Call (optional)
-
-	-- Concurrent Signal Assignment (optional)
-
-	-- Conditional Signal Assignment (optional)
-
-	-- Selected Signal Assignment (optional)
-
-	-- Component Instantiation Statement (optional)
-
-	-- Generate Statement (optional)
+--	dmux1 : dmux4x8
+--		port map (
+--		
+--		);
+--	dmux2 : dmux2x8 
+--		port map (
+--			
+--		);
 
 end data_flow;

@@ -13,6 +13,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use work.PCK_CRC16_D8.all;	
+
 
 entity crccalc is
 	
@@ -36,24 +38,48 @@ end crccalc;
 -- Library Clause(s) (optional)
 -- Use Clause(s) (optional)
 
-architecture data_flow of crccalc is
+architecture behavior of crccalc is
 
-	-- Declarations (optional)
 
+
+signal newCRC : std_logic_vector(15 downto 0) := "0000000000000000";
 begin
 
-	-- Process Statement (optional)
+	index_k <= index ;
 
-	-- Concurrent Procedure Call (optional)
+	process (clk, data_index, newCRC)
+	  begin
+		if clk = '1' and rising_edge(clk) then  
+		  newCRC <= nextCRC16_D8 (data_index, newCRC);
+		else null;
+	  end if;
+	end process;
+crc2_index <= newCRC;
 
-	-- Concurrent Signal Assignment (optional)
+end behavior;
+--
+--	signal crc2 : std_logic_vector ( 15 downto 0 );
+--	--signal data : std_logic;
+--
+--begin
+--  crc2 <= CRCSTART ;
+--  
+--               crc2(0)  <= data  xor crc2(15);
+--               crc2(1)  <= crc2(0);
+--               crc2(2)  <= crc2(1) xor (data xor crc2(15));
+--               crc2(3)  <= crc2(2);
+--               crc2(4)  <= crc2(3);
+--               crc2(5)  <= crc2(4);
+--               crc2(6)  <= crc2(5);
+--			   crc2(7)  <= crc2(6);
+--               crc2(8)  <= crc2(7);
+--               crc2(9)  <= crc2(8);
+--               crc2(10)  <= crc2(9);
+--               crc2(11)  <= crc2(10);
+--               crc2(12)  <= crc2(11);
+--               crc2(13)  <= crc2(12);
+--               crc2(14)  <= crc2(13);
+--               crc2(15)  <= crc2(14) xor (data xor crc2(15));
+--
+--    crc2_index <= crc2; 
 
-	-- Conditional Signal Assignment (optional)
-
-	-- Selected Signal Assignment (optional)
-
-	-- Component Instantiation Statement (optional)
-
-	-- Generate Statement (optional)
-
-end data_flow;
