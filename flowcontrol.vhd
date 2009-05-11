@@ -60,7 +60,6 @@ architecture data_flow of flowcontrol is
 
 begin
 	
-	flow <= flow_in;	
 		
     process (clk, rst, flow_in) 
     begin
@@ -70,7 +69,7 @@ begin
 				count <= (others => '0');
         elsif (flow_in = "01") then
 				if (rising_edge(clk)) then
-					count <= count + 1;
+					count <= count + 8;
                 end if;
         end if;
  

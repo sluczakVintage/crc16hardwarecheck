@@ -57,29 +57,3 @@ begin
 crc2_index <= newCRC;
 
 end behavior;
---
---	signal crc2 : std_logic_vector ( 15 downto 0 );
---	--signal data : std_logic;
---
---begin
---  crc2 <= CRCSTART ;
---  
---               crc2(0)  <= data  xor crc2(15);
---               crc2(1)  <= crc2(0);
---               crc2(2)  <= crc2(1) xor (data xor crc2(15));
---               crc2(3)  <= crc2(2);
---               crc2(4)  <= crc2(3);
---               crc2(5)  <= crc2(4);
---               crc2(6)  <= crc2(5);
---			   crc2(7)  <= crc2(6);
---               crc2(8)  <= crc2(7);
---               crc2(9)  <= crc2(8);
---               crc2(10)  <= crc2(9);
---               crc2(11)  <= crc2(10);
---               crc2(12)  <= crc2(11);
---               crc2(13)  <= crc2(12);
---               crc2(14)  <= crc2(13);
---               crc2(15)  <= crc2(14) xor (data xor crc2(15));
---
---    crc2_index <= crc2; 
-
