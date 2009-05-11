@@ -19,15 +19,15 @@ use ieee.numeric_std.all;
 -- 4 x 8
 ----------------------
 
-entity dmux is
+entity dmux4x8 is
 	port(
 		input			: in std_logic_vector ( 7 downto 0 );
 		sel				: in std_logic_vector( 1 downto 0 );
 		o1, o2, o3, o4	: out std_logic_vector ( 7 downto 0 )
 	);
-end dmux;
+end dmux4x8;
 
-architecture behavior of dmux is
+architecture behavior of dmux4x8 is
 begin
 	
 	process (input, sel)
