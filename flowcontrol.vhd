@@ -42,7 +42,7 @@ entity flowcontrol is
 			-- enable demultipleksera d³ugoœci modu³ów
 		enable_RDMdmux  : out std_logic_vector ( 1 downto 0 );
 			-- enable demultipleksera danych na modu³y
-		enable_DATAdmux : out std_logic_vector ( 1 downto 0 );
+		enable_PACKdmux : out std_logic_vector ( 1 downto 0 );
 			-- enable demultipleksera modu³ów na dane i crc
 		enable_MODdmux0 : out std_logic_vector ( 0 downto 0 );	
 		enable_MODdmux1 : out std_logic_vector ( 0 downto 0 );	
@@ -83,7 +83,7 @@ begin
 			enable_MAINdmux <= (others => '0');
 			enable_HEADdmux <= (others => '0');
 			enable_RDMdmux <= (others => '0');
-			enable_DATAdmux <= (others => '0');
+			enable_PACKdmux <= (others => '0');
 			enable_MODdmux0 <= (others => '0');
 			enable_MODdmux1 <= (others => '0');
 			enable_MODdmux2 <= (others => '0');
@@ -92,7 +92,7 @@ begin
 			enable_MAINdmux <= (others => '0');
 			enable_HEADdmux <= (others => '0');
 			enable_RDMdmux <= (others => '0');
-			enable_DATAdmux <= (others => '0');
+			enable_PACKdmux <= (others => '0');
 			enable_MODdmux0 <= (others => '0');
 			enable_MODdmux1 <= (others => '0');
 			enable_MODdmux2 <= (others => '0');
@@ -107,48 +107,51 @@ begin
 			-- 16bit -> LM
 			when "0000000000010000" =>
 				enable_HEADdmux <= "1";
-			-- 29bit -> DM1	
-			when "0000000000011101" =>
+			-- 32bit -> DM1	
+			when "0000000000100000" =>
 				enable_RDMdmux <= "01";
-			-- 42bit -> DM2
-			when "0000000000101010" =>
+			-- 48bit -> DM2
+			when "0000000000110000" =>
 				enable_RDMdmux <= "10";
-			-- 55bit -> DM3
-			when "0000000000111000" =>
+			-- 64bit -> DM3
+			when "0000000001000000" =>
 				enable_RDMdmux <= "11";
-			-- 68bit -> DM4
-			when "0000000001000100" =>
+			-- 80bit -> DM4
+			when "0000000001010000" =>
 				enable_MAINdmux <= "00";
-			-- 76bit -> EOH
-			when "0000000001001100" =>
+			-- 88bit -> EOH
+			when "0000000001011000" =>
 				enable_MAINdmux <= "10";
-			-- 92bit -> CRC0
-			when "0000000001011100" =>
+			-- 104bit -> CRC0
+			when "0000000001101000" =>
 				enable_MODdmux0 <= "1";
-			-- 8283bit -> DATA0
-			when "0010000001011011" =>
-				enable_DATAdmux <= "01";
+			-- 8296bit -> DATA0
+			when "0010000001101000" =>
+				enable_PACKdmux <= "01";
 				enable_MODdmux1 <= "0";
-			-- 8299bit -> CRC1
-			when "0010000001101011" =>
+			-- 8312bit -> CRC1
+			when "0010000001111000" =>
 				enable_MODdmux1 <= "1";
-			-- 16490bit -> DATA1
-			when "0100000001101010" =>
-				enable_DATAdmux <= "10";
+			-- 16504bit -> DATA1
+			when "0100000001111000" =>
+				enable_PACKdmux <= "10";
 				enable_MODdmux2 <= "0";
-			-- 16506bit -> CRC2
-			when "0100000001111010" =>
+			-- 16520bit -> CRC2
+			when "0100000010001000" =>
 				enable_MODdmux2 <= "1";
-			-- 24697bit -> DATA2
-			when "0110000001111001" =>
-				enable_DATAdmux <= "11";
+			-- 24712bit -> DATA2
+			when "0110000010001000" =>
+				enable_PACKdmux <= "11";
 				enable_MODdmux3 <= "0";
-			-- 24713bit -> CRC3
-			when "0110000010001001" =>
+			-- 24728bit -> CRC3
+			when "0110000010011000" =>
 				enable_MODdmux3 <= "1";
-			-- 32904bit -> DATA3
-			when "1000000010001000" =>
-								
+			-- 32920bit -> DATA3
+			when "1000000010011000" =>
+				enable_MAINdmux <= "00";
+			-- 32936bit -> EOP					
+			when "1000000010101000" =>
+			
 			when others =>
 				flow <= "11";
 			end case;

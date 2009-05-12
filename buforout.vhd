@@ -23,12 +23,13 @@ entity buforout is
 		--@@ TODO dodaæ stygna³y z US
 		clk : in std_logic;
 		rst : in std_logic;
-		--ena : in std_logic; ---<<<<<,
+		ena : in std_logic; ---<<<<<,
+		sel : in std_logic_vector ( 1 downto 0 ); ----<<<<<
 		status_index : in std_logic_vector ( 1 downto 0 );
-		status2_index : in std_logic_vector (1 downto 0 );
+		status2_index : in std_logic_vector ( 1 downto 0 );
 	
 		--OUTPUTS
-		raport : out std_logic_vector (7 downto 0 )
+		raport : out std_logic_vector (1 downto 0 ) --<<<<<<zmieniæ na 8bit!!
 		
 	);
 end buforout;
@@ -86,7 +87,7 @@ begin
 		port map ( 
 clk => clk,
 rst => rst,
-ena => enable,
+ena => ena,
 d => sig1_a,
 q => sig2_a
 );
@@ -95,7 +96,7 @@ q => sig2_a
 		port map (
 clk => clk,
 rst => rst,
-ena => enable,
+ena => ena,
 d => sig1_b,
 q => sig2_b
 );
@@ -104,7 +105,7 @@ q => sig2_b
 		port map (
 clk => clk,
 rst => rst,
-ena => enable,
+ena => ena,
 d => sig1_c,
 q => sig2_c
 );
@@ -113,7 +114,7 @@ q => sig2_c
 		port map (
 clk => clk,
 rst => rst,
-ena => enable,
+ena => ena,
 d => sig1_d,
 q => sig2_d
 );
@@ -121,7 +122,7 @@ q => sig2_d
 
 	dmux1 : dmux4x2
 		port map (
-			input => data,
+			input => status_index,
 			sel => sel,
 			o1 => sig1_a,
 			o2 => sig1_b,
@@ -132,7 +133,7 @@ q => sig2_d
 
 	mux2 : mux4x2 
 		port map (
-				output => data_index,
+				output => raport,
 			sel => sel,
 			i1 => sig2_a,
 			i2 => sig2_b,
