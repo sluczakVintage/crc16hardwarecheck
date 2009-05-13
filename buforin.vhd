@@ -365,7 +365,7 @@ dmux_pack : dmux4x8
 --------------------------------------
 -------- mux i dmux rdm --------------
 --------------------------------------
-dmux1_rdm : dmux4x8
+	dmux1_rdm : dmux4x8
 		port map (
 			input => sig1_head,
 			sel => enable_RDMdmux,
@@ -374,7 +374,6 @@ dmux1_rdm : dmux4x8
 			o3 => sig1_c_rdm,
 			o4 => sig1_d_rdm
 		);
-		
 
 	mux2_rdm : mux4x8 
 		port map (
@@ -516,13 +515,4 @@ dmux1_rdm : dmux4x8
 			d => sig1_head,
 			q => sig2_rlm
 		);
-
-	
-
-
-
-
-
-
-
 end data_flow;

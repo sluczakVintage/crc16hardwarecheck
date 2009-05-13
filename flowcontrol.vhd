@@ -7,27 +7,21 @@
 -- Author	:	Maciej Nowak 
 -- Based on	:	/
 --------------------------------
-
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
 
-
 entity flowcontrol is
-
 	generic
 	(
 		MIN_COUNT : natural := 0;
 		MAX_COUNT : natural := 32944
 	);
-
 	port
 	(
 		-- INPUTS
 			--@@ TODO: nale¿y dodaæ sygna³y z uk³adu steruj¹cego
-			
 		clk 			: in std_logic;
 		rst				: in std_logic;
 		flow_in			: in std_logic;
@@ -35,9 +29,7 @@ entity flowcontrol is
 		-- 00 - idle
 		-- 01 - enable
 		-- 11 - end transmission
-		-----------
-		
-		
+		-----------		
 		--OUTPUTS
 		flow_out			: out std_logic;
 			-- enable g³ównego demultipleksera
@@ -81,9 +73,7 @@ type FLOW_FSM_STATE_TYPE is (
 	
 signal flow_fsm_reg, flow_fsm_next	:FLOW_FSM_STATE_TYPE;
 
-
 signal count		  : integer range MIN_COUNT to MAX_COUNT;
-
 
 begin
 process (clk)
@@ -108,9 +98,6 @@ process (clk)
 		-- Output the current count
 		count <= cnt;
 	end process;
-
-	
-
 --------------------------------------------------------------
 process (clk, rst)
 	begin

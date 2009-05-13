@@ -7,7 +7,6 @@
 -- Author	:	Maciej Nowak 
 -- Based on	:	/
 --------------------------------
-
 ---------------------------
 --
 library ieee;
@@ -27,7 +26,6 @@ entity crccalc is
 		rst : in std_logic;
 		index : in std_logic_vector ( 1 downto 0 );
 		data_index : in std_logic_vector (7 downto 0 );
-
 		--OUTPUTS
 		index_k : out std_logic_vector ( 1 downto 0 );
 		crc2_index : out std_logic_vector (15 downto 0 )

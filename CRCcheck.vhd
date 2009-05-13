@@ -28,10 +28,7 @@ entity CRCcheck is
 		usb_rxf : in std_logic;
 			-- data vector from usb
 		data : in  std_logic_vector ( 7 downto 0 );
-		
-		---------
-		
-		---------
+
 		
 		-- Output ports
 			-- read signal to usb
@@ -99,36 +96,28 @@ end component;
 component buforout
 	port
 	(
-	
 		--INPUTS
 		--@@ TODO dodaæ stygna³y z US
 		clk : in std_logic;
 		rst : in std_logic;
 		status_index : in std_logic_vector ( 1 downto 0 );
 		status2_index : in std_logic_vector (1 downto 0 );
-
 		--OUTPUTS
 		raport : out std_logic_vector (7 downto 0 )
-		
 	);
 end component;
 
 component comparator
-	
-
 	port
 	(
-	
 		--INPUTS
 		--@@ TODO dodaæ stygna³y z US
 		index : in std_logic_vector ( 1 downto 0 );
 		index_k : in std_logic_vector ( 1 downto 0 );
 		CRC_index : in std_logic_vector ( 15 downto 0 );
 		CRC2_index : in std_logic_vector ( 15 downto 0 );
-
 		--OUTPUTS
 		status_index : out std_logic_vector ( 1 downto 0 )
-		
 	);
 end component;
 	

@@ -16,8 +16,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity comparator is
-	
-
 	port
 	(
 	
@@ -27,10 +25,8 @@ entity comparator is
 		index_k : in std_logic_vector ( 1 downto 0 );
 		crc_index : in std_logic_vector ( 15 downto 0 );
 		crc2_index : in std_logic_vector ( 15 downto 0 );
-
 		--OUTPUTS
-		status_index : out std_logic_vector ( 1 downto 0 )
-		
+		status_index : out std_logic_vector ( 1 downto 0 )	
 	);
 end comparator;
 -- Library Clause(s) (optional)
