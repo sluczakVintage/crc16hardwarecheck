@@ -120,7 +120,21 @@ component dmux2x8	-- dmux dziel¹cy na crc i data
 	);
 end component;	
 
+------------------------------------------------
+---------------ram-------------------------------
+-------------------------------------------------
 
+component ram 
+		PORT
+		(
+		address		: IN STD_LOGIC_VECTOR (9 DOWNTO 0);
+		clock		: IN STD_LOGIC ;
+		data		: IN STD_LOGIC_VECTOR (7 DOWNTO 0);
+		wren		: IN STD_LOGIC ;		-- write/read enable
+		q			: OUT STD_LOGIC_VECTOR (7 DOWNTO 0)		-- output
+		);
+
+end component;
 
 
 ----------------------------------------------------
@@ -210,7 +224,11 @@ signal sig2_a_rdm, sig2_b_rdm, sig2_c_rdm, sig2_d_rdm : std_logic_vector ( 7 dow
 -------------------------------------
 -- sygna³y DATA
 -------------------------------------
-signal sig1_a_data, sig1_b_data, sig1_c_data, sig1_d_data, sig2_a_data, sig2_b_data, sig2_c_data, sig2_d_data : std_logic_vector ( 7 downto 0 );
+signal sig1_a_data, sig1_b_data, sig1_c_data, sig1_d_data : std_logic_vector ( 7 downto 0 );		--sygna³y wejœcia do ramu
+signal sig2_a_data, sig2_b_data, sig2_c_data, sig2_d_data : std_logic_vector ( 7 downto 0 );		-- sygna³y wyjœcia z ramu
+signal wren_a, wren_b, wren_c, wren_d : std_logic;
+signal address_a, address_b, address_c, address_d : std_logic_vector ( 9 downto 0);
+
 
 -------------------------------------
 -- sygna³y CRC
@@ -221,10 +239,10 @@ signal sig2_a_crc, sig2_b_crc, sig2_c_crc, sig2_d_crc : std_logic_vector ( 7 dow
 
 
 signal junk : std_logic_vector ( 7 downto 0 ); --<-----------sygna³ wype³niany przez nieobs³u¿one jeszcze dane
+
 ----------------------------------------------
 ------------------------------------------------- BEGIN
 ----------------------------------------------
-
 begin
 
 -------------------------------------
@@ -369,43 +387,44 @@ dmux1_rdm : dmux4x8
 		);
 
 -------------------------------------
---------rejesrty data ---------------
+--------ram data ---------------
 -------------------------------------
-	data_0 : reg8K
-		port map ( 
-			clk => clk,
-			rst => rst,
-			ena => enable,
-			d => sig1_a_data,
-			q => sig2_a_data
-		);
-
-	data_1 : reg8K
-		port map (
-			clk => clk,
-			rst => rst,
-			ena => enable,
-			d => sig1_b_data,
-			q => sig2_b_data
-		);
-
-	data_2 : reg8K
-		port map (
-			clk => clk,
-			rst => rst,
-			ena => enable,
-			d => sig1_c_data,
-			q => sig2_c_data
-		);
-
-	data_3 : reg8K
-		port map (
-			clk => clk,
-			rst => rst,
-			ena => enable,
-			d => sig1_d_data,
-			q => sig2_d_data
-		);
+	ram_data0 : ram
+		PORT MAP (
+		wren => wren_a,		-- write / read enable	-- TODO trzeba z US daæ sygna³ zapisuj¹cy
+		clock => clk,	
+		address => address_a, --- TODO daæ generator adresów alvo inne cudo
+		data => sig1_a_data,
+		q => sig2_a_data		-- wyjœcie
+	);
+	
+	ram_data1 : ram
+		PORT MAP (
+		wren => wren_b,		-- write / read enable	-- TODO trzeba z US daæ sygna³ zapisuj¹cy
+		clock => clk,	
+		address => address_b, --- TODO daæ generator adresów alvo inne cudo
+		data => sig1_b_data,
+		q => sig2_b_data		-- wyjœcie
+	);
+		
+	ram_data2 : ram
+		PORT MAP (
+		wren => wren_c,		-- write / read enable	-- TODO trzeba z US daæ sygna³ zapisuj¹cy
+		clock => clk,	
+		address => address_c, --- TODO daæ generator adresów alvo inne cudo
+		data => sig1_c_data,
+		q => sig2_c_data		-- wyjœcie
+	);
+		
+	ram_data3 : ram
+		PORT MAP (
+		wren => wren_d,		-- write / read enable	-- TODO trzeba z US daæ sygna³ zapisuj¹cy
+		clock => clk,	
+		address => address_d, --- TODO daæ generator adresów alvo inne cudo
+		data => sig1_d_data,
+		q => sig2_d_data		-- wyjœcie
+	);
+				
 
 -------------------------------------
 --------rejesrty crc docelowo 16bit -
