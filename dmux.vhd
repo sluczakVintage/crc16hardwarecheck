@@ -123,7 +123,7 @@ begin
 		case sel is
 			when "0" => 
 				o1 <= input;
-			when "1" => 
+			when others => 
 				o2 <= input;
 		end case;
 		
