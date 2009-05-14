@@ -23,9 +23,9 @@ entity buforin is
 		clk : in  std_logic ;
 		rst : in std_logic;
 		data  : in std_logic_vector ( 7 downto 0 );
-		enable : in std_logic;
 		sel : in std_logic_vector ( 1 downto 0 );
-		flow_in : in std_logic_vector ( 1 downto 0 );   --<<----- >????????
+		flow_in : in std_logic;   --<<----- >????????
+		
 			--OUTPUTS
 		usb_endread : out std_logic;
 		index : out std_logic_vector ( 1 downto 0 );
@@ -33,7 +33,7 @@ entity buforin is
 		data_index : out std_logic_vector ( 7 downto 0 );
 		CRC_index : out std_logic_vector ( 7 downto 0 ); ----<----- powinno byæ 16 bit
 		
-		flow_out : out std_logic_vector ( 1 downto 0 )   --<<----- >????????
+		flow_out : out std_logic  --<<----- >????????
 	);
 end buforin;
 
@@ -55,7 +55,8 @@ component flowcontrol
 			
 		clk 			: in std_logic;
 		rst				: in std_logic;
-		flow_in			: in std_logic_vector ( 1 downto 0 );
+		flow_in			: in std_logic;
+
 		-----------
 		-- 00 - idle
 		-- 01 - enable
@@ -64,7 +65,7 @@ component flowcontrol
 		
 		
 		--OUTPUTS
-		flow_out			: out std_logic_vector ( 1 downto 0 );
+		flow_out			: out std_logic;
 			-- enable g³ównego demultipleksera
 		enable_MAINdmux : out std_logic_vector ( 1 downto 0 );
 			-- enable demultimpleksera nag³ówka na liczbê modu³ów i d³ugoœæ modu³ów
@@ -77,8 +78,8 @@ component flowcontrol
 		enable_MODdmux0 : out std_logic_vector ( 0 downto 0 );	
 		enable_MODdmux1 : out std_logic_vector ( 0 downto 0 );	
 		enable_MODdmux2 : out std_logic_vector ( 0 downto 0 );	
-		enable_MODdmux3 : out std_logic_vector ( 0 downto 0 )	
-		
+		enable_MODdmux3 : out std_logic_vector ( 0 downto 0 );	
+		ena_RLM, ena_RDM0, ena_RDM1, ena_RDM2, ena_RDM3, ena_CRC0, ena_CRC1, ena_CRC2, ena_CRC3, ena_DATA0, ena_DATA1, ena_DATA2, ena_DATA3 : out std_logic
 	);
 end component;
 
@@ -177,23 +178,8 @@ component reg16		----rejestr CRC
 	);
 end component;
 
-component reg8K		
-	port
-	(
-		--INPUTS
-		--@@ TODO dodaæ stygna³y z US
-		clk : in std_logic;
-		rst : in std_logic;
-		ena : in std_logic;
-		d : in std_logic_vector ( 7 downto 0 );
-		
-		--OUTPUTS
-		q : out std_logic_vector ( 7 downto 0 )
-		
-		
-	);
-end component;
 
+signal enaRLM, enaRDM0, enaRDM1, enaRDM2, enaRDM3, enaCRC0, enaCRC1, enaCRC2, enaCRC3, enaDATA0, enaDATA1, enaDATA2, enaDATA3 : std_logic;
 signal enable_MAINdmux,	enable_RDMdmux, enable_PACKdmux : std_logic_vector ( 1 downto 0 );
 signal enable_HEADdmux, enable_MODdmux0, enable_MODdmux1, enable_MODdmux2, enable_MODdmux3 : std_logic_vector ( 0 downto 0 );
 -------------------------------------
@@ -237,7 +223,6 @@ signal sig1_a_crc, sig1_b_crc, sig1_c_crc, sig1_d_crc : std_logic_vector ( 7 dow
 signal sig2_a_crc, sig2_b_crc, sig2_c_crc, sig2_d_crc : std_logic_vector ( 7 downto 0 );
 
 
-
 signal junk : std_logic_vector ( 7 downto 0 ); --<-----------sygna³ wype³niany przez nieobs³u¿one jeszcze dane
 
 ----------------------------------------------
@@ -262,7 +247,20 @@ begin
 		enable_MODdmux0 => enable_MODdmux0,
 		enable_MODdmux1 => enable_MODdmux1,
 		enable_MODdmux2 => enable_MODdmux2,
-		enable_MODdmux3 => enable_MODdmux3 
+		enable_MODdmux3 => enable_MODdmux3, 
+			ena_RLM     => enaRLM,
+			ena_RDM0    => enaRDM0, 
+			ena_RDM1	=> enaRDM1, 
+			ena_RDM2	=> enaRDM2, 
+			ena_RDM3	=> enaRDM3, 
+			ena_CRC0	=> enaCRC0, 
+			ena_CRC1	=> enaCRC1, 
+			ena_CRC2	=> enaCRC2, 
+			ena_CRC3	=> enaCRC3, 
+			ena_DATA0   => enaDATA0, 
+			ena_DATA1	=> enaDATA1, 
+			ena_DATA2	=> enaDATA2, 
+			ena_DATA3	=> enaDATA3
 		);
 -------------------------------------
 --------MAIN DMUX--------------------
@@ -271,8 +269,8 @@ begin
 		port map ( 
 			input => data,
 			sel => enable_MAINdmux,
-			o1 => sig01_main,
-			o2 => sig00_main, --<------ DO OBSLUZENIA
+			o1 => sig00_main,
+			o2 => sig01_main, --<------ DO OBSLUZENIA
 			o3 => sig10_main,
 			o4 => sig11_main_empty -- EMPTY
 		);
@@ -308,32 +306,32 @@ dmux_pack : dmux4x8
 		port map (
 			input => sig00_pack,			----- tu powinien byæ sygna³ id¹cy z dmuxa 
 			sel => enable_MODdmux0,
-			o1 => sig1_a_data,
-			o2 => sig1_a_crc			
+			o1 => sig1_a_crc,
+			o2 => sig1_a_data			
 		);
 		
 	dmux1_data_crc : dmux2x8
 		port map (
 			input => sig01_pack,			----- tu powinien byæ sygna³ id¹cy z dmuxa 
 			sel => enable_MODdmux1,
-			o1 => sig1_b_data,
-			o2 => sig1_b_crc			
+			o1 => sig1_b_crc,
+			o2 => sig1_b_data
 		);
 		
 	dmux2_data_crc : dmux2x8
 		port map (
 			input => sig10_pack,			----- tu powinien byæ sygna³ id¹cy z dmuxa 
 			sel => enable_MODdmux2,
-			o1 => sig1_c_data,
-			o2 => sig1_c_crc			
+			o1 => sig1_c_crc,
+			o2 => sig1_c_data			
 		);
 		
 	dmux3_data_crc : dmux2x8
 		port map (
 			input => sig11_pack,			----- tu powinien byæ sygna³ id¹cy z dmuxa 
 			sel => enable_MODdmux3,
-			o1 => sig1_d_data,
-			o2 => sig1_d_crc			
+			o1 => sig1_d_crc,
+			o2 => sig1_d_data			
 		);		
 --------------------------------------
 --------- mux data -------------------
@@ -390,7 +388,7 @@ dmux_pack : dmux4x8
 -------------------------------------
 	ram_data0 : ram
 		PORT MAP (
-		wren => wren_a,		-- write / read enable	-- TODO trzeba z US daæ sygna³ zapisuj¹cy
+		wren => enaDATA0,		-- write / read enable	-- TODO trzeba z US daæ sygna³ zapisuj¹cy
 		clock => clk,	
 		address => address_a, --- TODO daæ generator adresów alvo inne cudo
 		data => sig1_a_data,
@@ -399,7 +397,7 @@ dmux_pack : dmux4x8
 	
 	ram_data1 : ram
 		PORT MAP (
-		wren => wren_b,		-- write / read enable	-- TODO trzeba z US daæ sygna³ zapisuj¹cy
+		wren => enaDATA1,		-- write / read enable	-- TODO trzeba z US daæ sygna³ zapisuj¹cy
 		clock => clk,	
 		address => address_b, --- TODO daæ generator adresów alvo inne cudo
 		data => sig1_b_data,
@@ -408,7 +406,7 @@ dmux_pack : dmux4x8
 		
 	ram_data2 : ram
 		PORT MAP (
-		wren => wren_c,		-- write / read enable	-- TODO trzeba z US daæ sygna³ zapisuj¹cy
+		wren => enaDATA2,		-- write / read enable	-- TODO trzeba z US daæ sygna³ zapisuj¹cy
 		clock => clk,	
 		address => address_c, --- TODO daæ generator adresów alvo inne cudo
 		data => sig1_c_data,
@@ -417,7 +415,7 @@ dmux_pack : dmux4x8
 		
 	ram_data3 : ram
 		PORT MAP (
-		wren => wren_d,		-- write / read enable	-- TODO trzeba z US daæ sygna³ zapisuj¹cy
+		wren => enaDATA3,		-- write / read enable	-- TODO trzeba z US daæ sygna³ zapisuj¹cy
 		clock => clk,	
 		address => address_d, --- TODO daæ generator adresów alvo inne cudo
 		data => sig1_d_data,
@@ -433,7 +431,7 @@ dmux_pack : dmux4x8
 		port map ( 
 			clk => clk,
 			rst => rst,
-			ena => enable,
+			ena => enaCRC0,
 			d => sig1_a_crc,
 			q => sig2_a_crc
 		);
@@ -442,7 +440,7 @@ dmux_pack : dmux4x8
 		port map (
 			clk => clk,
 			rst => rst,
-			ena => enable,
+			ena => enaCRC1,
 			d => sig1_b_crc,
 			q => sig2_b_crc
 		);
@@ -451,7 +449,7 @@ dmux_pack : dmux4x8
 		port map (
 			clk => clk,
 			rst => rst,
-			ena => enable,
+			ena => enaCRC2,
 			d => sig1_c_crc,
 			q => sig2_c_crc
 		);
@@ -460,7 +458,7 @@ dmux_pack : dmux4x8
 		port map (
 			clk => clk,
 			rst => rst,
-			ena => enable,
+			ena => enaCRC3,
 			d => sig1_d_crc,
 			q => sig2_d_crc
 		);
@@ -473,7 +471,7 @@ dmux_pack : dmux4x8
 				port map ( 
 			clk => clk,
 			rst => rst,
-			ena => enable,
+			ena => enaRDM0,
 			d => sig1_a_rdm,
 			q => sig2_a_rdm
 		);
@@ -482,7 +480,7 @@ dmux_pack : dmux4x8
 				port map (
 			clk => clk,
 			rst => rst,
-			ena => enable,
+			ena => enaRDM1,
 			d => sig1_b_rdm,
 			q => sig2_b_rdm
 		);
@@ -491,7 +489,7 @@ dmux_pack : dmux4x8
 				port map (
 			clk => clk,
 			rst => rst,
-			ena => enable,
+			ena => enaRDM2,
 			d => sig1_c_rdm,
 			q => sig2_c_rdm
 		);
@@ -500,18 +498,18 @@ dmux_pack : dmux4x8
 				port map (
 			clk => clk,
 			rst => rst,
-			ena => enable,
+			ena => enaRDM3,
 			d => sig1_d_rdm,
 			q => sig2_d_rdm
 		);
 -------------------------------------
--- rejestr RLM ka¿dy 8bit 
+-- rejestr RLM 8bit 
 -------------------------------------
 	rlm_0 : reg8
 				port map ( 
 			clk => clk,
 			rst => rst,
-			ena => enable,
+			ena => enaRLM,
 			d => sig1_head,
 			q => sig2_rlm
 		);

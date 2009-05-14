@@ -15,27 +15,28 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity buforout is
-	generic
-	(
-		MIN : natural := 0;
-		MAX : natural := 8
-	);
+
 	port
 	(
 		--INPUTS
 		--@@ TODO dodaæ stygna³y z US
+		
 		clk : in std_logic;
 		rst : in std_logic;
-		ena : in std_logic; ---<<<<<,
-		ena0,ena1,ena2,ena3 : in std_logic_vector (0 downto 0);
-		sel_dmux 	: in std_logic_vector ( 1 downto 0 );
+		
+		bufout_send : in std_logic;
+		bufout_receive : in  std_logic_vector ( 2 downto 0 );
 		sel_mux 	: in std_logic_vector ( 1 downto 0 ); 
 		status_index : in std_logic_vector ( 1 downto 0 );
-		status2_index : in std_logic_vector ( 1 downto 0 );
+	--	status2_index : in std_logic_vector ( 1 downto 0 );
+	
+		
 	
 		--OUTPUTS
-		raport : out std_logic_vector (1 downto 0 ) --<<<<<<zmieniæ na 8bit!!
+		raport : out std_logic_vector (1 downto 0 ); --<<<<<<zmieniæ na 8bit!!
 		
+		bufout_rec_done : out std_logic;
+		bufout_sent_done : out std_logic
 	);
 end buforout;
 -- Library Clause(s) (optional)
@@ -49,21 +50,21 @@ type BUFOUT_FSM_STATE_TYPE is (
 	bufout_idle,				--- stan spoczynkowy
 	--bufout_receiving,			--- stan odbierania danych 
 	bufout_receiving0,
-	 bufout_receiving1,
-	  bufout_receiving2,
-	   bufout_receiving3,
+	bufout_receiving1,
+	bufout_receiving2,
+	bufout_receiving3,
 	bufout_sending				--- stan wysy³ania raportu
 	);
 
 signal bufout_fsb_cur, bufout_fsb_next	: BUFOUT_FSM_STATE_TYPE; --- sygna³y automatu bufout
-signal bufout_ready, bufout_send, bufout_write   : std_logic; 		--sygna³y do komunikacji miêdzy bufout a us
 
-signal count		  : integer range MIN to MAX;
-signal start_cnt : std_logic;
-signal enable1, enable2, enable3, enable4 :std_logic;
-signal us_receive : std_logic_vector (2 downto 0);
+signal bufout_ready, bufout_sent  : std_logic; 		--sygna³y do komunikacji miêdzy bufout a us
 
 
+signal enable1, enable2, enable3, enable4 : std_logic;
+signal  sel_dmux : std_logic_vector ( 1 downto 0 );
+
+--signal count		  : integer range MIN to MAX;
 --	signal stat1, stat2, stat3, stat4, statout : std_logic_vector ( 1 downto 0 );
 --	signal sel : std_logic_vector ( 1 downto 0 );
 --	signal status : std_logic_vector ( 1 downto 0 );
@@ -113,7 +114,7 @@ component reg2
 	);
 end component;
 
---signal sig0 : std_logic_vector ( 1 downto 0 );
+
 signal sig1_a, sig1_b, sig1_c, sig1_d, sig2_a, sig2_b, sig2_c, sig2_d : std_logic_vector ( 1 downto 0 );
 begin
 	status_0 : reg2
@@ -184,90 +185,72 @@ process (clk, rst)
 		end if;
 	end process;
 
------liczenie bitów
 
-process (start_cnt ,clk)
-		variable   cnt		   : integer range MIN to MAX;
+
+process(bufout_fsb_cur, bufout_receive, bufout_send)
 	begin
-		if (rising_edge(clk)) then
-		  if rst = '1' then
-		   -- Reset the counter to 0
-		   cnt := 0;
-		  elsif start_cnt = '1' then
-		  cnt:=0;
-		   -- Increment the counter if counting is enabled      
-		 elsif start_cnt = '0' then
-		   cnt := cnt + 2;
-
-		  end if;
-		 end if;
-
-		-- Output the current count
-		count <= cnt;
-	end process;
-
-
-
-process(bufout_fsb_cur, us_receive, bufout_send, count)
-	begin
+		
+		sel_dmux <= "00";
+		enable1 <= '0';
+		enable2 <= '0';
+		enable3 <= '0';
+		enable4 <= '0';
+	
+		bufout_sent <= '0';
 		
 		case bufout_fsb_cur is
 			
 			when bufout_idle => 
-				if us_receive = "000" then
-					bufout_fsb_next <= bufout_idle;
-					
-				elsif us_receive = "001" then
+				
+				if bufout_receive  = "001" then
 					bufout_fsb_next <= bufout_receiving0;
-					start_cnt <='1';
-				
-				elsif us_receive = "010" then
-					bufout_fsb_next <= bufout_idle;
-				elsif us_receive = "011" then
+				--	start_cnt <='1';	
+				elsif bufout_receive  = "010" then
 					bufout_fsb_next <= bufout_receiving1;
-					start_cnt <= '1';
-				elsif us_receive = "100" then
-					bufout_fsb_next <= bufout_idle;
-				elsif us_receive = "101" then
+				--	start_cnt <= '1';
+				elsif bufout_receive  = "011" then
 					bufout_fsb_next <= bufout_receiving2;
-					start_cnt <= '1';
-				elsif us_receive = "110" then
-					bufout_fsb_next <= bufout_idle;
-				elsif us_receive = "111" then
+				--	start_cnt <= '1';
+				elsif bufout_receive  = "100" then
 					bufout_fsb_next <= bufout_receiving3;
-					start_cnt <= '1';
-				end if;
-				
+				--	start_cnt <= '1';
+				else
+					if bufout_send = '1' then
+						bufout_fsb_next <= bufout_sending;
+					else
+						bufout_fsb_next <= bufout_idle;		
+					end if;
+				end if;		
 			when bufout_receiving0 =>
-				if count =2 then
+				
 					bufout_fsb_next <=bufout_idle;
-				else
-					enable1 <= '0';
-				end if;	
+					sel_dmux <= "00";
+					enable1 <= '1';
+				
 			when bufout_receiving1 =>
-				if count =2 then
-					bufout_fsb_next <=bufout_idle;
-				else
-					enable2 <= '0';
-				end if;	
+					bufout_fsb_next <= bufout_idle;
+					sel_dmux <= "01";
+					enable2 <= '1';
+				
 			when bufout_receiving2 =>
-				if count =2 then
+		
 					bufout_fsb_next <=bufout_idle;
-				else
-					enable3 <= '0';
-				end if;	
+					sel_dmux <= "10";
+					enable3 <= '1';
+				
 			when bufout_receiving3 =>
-				if count =2 then
+				
 					bufout_fsb_next <=bufout_idle;
-				else
-					enable4 <= '0';
-			end if;
+					sel_dmux <= "11";
+					enable4 <= '1';
 			
 			
 			when bufout_sending =>
 				bufout_fsb_next <= bufout_idle;
+				bufout_sent <= '1';
 		end case;				
 			
 	end process;
-		
+bufout_sent_done <= bufout_sent;	
+	
 end data_flow;

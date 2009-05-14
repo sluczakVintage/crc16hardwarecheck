@@ -15,7 +15,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.PCK_CRC16_D8.all;
 
-entity buforin is
+entity buforin11 is
 
 	port
 	(
@@ -33,12 +33,12 @@ entity buforin is
 		data_index : out std_logic_vector ( 7 downto 0 );
 		CRC_index : out std_logic_vector ( 15 downto 0 )
 	);
-end buforin;
+end buforin11;
 
 -- Library Clause(s) (optional)
 -- Use Clause(s) (optional)
 
-architecture data_flow of buforin is
+architecture data_flow of buforin11 is
 
 
 -------------------------------------------
