@@ -12,16 +12,9 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
-use ieee.numeric_std.all;
 
 
 entity flowcontrol is
-
-	generic
-	(
-		MIN_COUNT : natural := 0;
-		MAX_COUNT : natural := 32944
-	);
 
 	port
 	(
@@ -82,32 +75,29 @@ type FLOW_FSM_STATE_TYPE is (
 	
 signal flow_fsm_reg, flow_fsm_next	:FLOW_FSM_STATE_TYPE;
 
-
-signal count		  : integer range MIN_COUNT to MAX_COUNT;
 signal enaRLM, enaRDM0, enaRDM1, enaRDM2, enaRDM3, enaCRC0, enaCRC1, enaCRC2, enaCRC3, enaDATA0, enaDATA1, enaDATA2, enaDATA3 : std_logic;
 
+-- Licznik jako rejestr - sygna³y
+signal cnt_reg, cnt_next: std_logic_vector (12 downto 0);	
+
 begin
-process (clk)
-		variable   cnt	  : integer range MIN_COUNT to MAX_COUNT;
+-- Licznik jako rejestr 13bit
+	process (clk, rst)
 	begin
-		if (rising_edge(clk)) then
-
-			if rst = '1' then
-				-- Reset the counter to 0
-				cnt := 0;
-			elsif  flow_in = '0' then
-				-- Increment the counter if counting is enabled			   
-				cnt := 0;
-
-			elsif flow_in = '1' then
-				-- Increment the counter if counting is enabled			   
-				cnt := cnt + 8;
-
-			end if;
+		if rst = '1' then
+			cnt_reg <= (others => '0');	
+		elsif rising_edge(clk) then
+			cnt_reg <= cnt_next;
 		end if;
+	end process;
 
-		-- Output the current count
-		count <= cnt;
+	process (cnt_reg, flow_in)
+	begin
+		if flow_in = '0' then
+			cnt_next <= (others => '0');
+		else
+			cnt_next <= cnt_reg + "1";
+		end if;
 	end process;
 
 	
@@ -123,7 +113,7 @@ process (clk, rst)
 	end process;
 
 	-- Funkcja przejsc-wyjsc
-	process(flow_fsm_reg, flow_in, count)
+	process(flow_fsm_reg, flow_in, cnt_reg)
 	begin
 		case flow_fsm_reg is
 			when flow_idle =>			
@@ -133,97 +123,97 @@ process (clk, rst)
 					flow_fsm_next <= flow_sop;
 				end if; 	
 			when flow_sop => 
-				if count = 8 then
+				if cnt_reg = 1 then -- 8bit
 					flow_fsm_next <= flow_header_rlm;
 				else 
 					flow_fsm_next <= flow_sop;	
 				end if;
 			when flow_header_rlm =>
-				if count = 16 then
+				if cnt_reg = 2 then -- 16bit
 					flow_fsm_next <= flow_header_rdm0;
 				else 
 					flow_fsm_next <= flow_header_rlm;			
 				end if;
 			when flow_header_rdm0 =>
-				if count = 32 then
+				if cnt_reg = 4 then -- 32bit
 					flow_fsm_next <= flow_header_rdm1;
 				else 
 					flow_fsm_next <= flow_header_rdm0;
 				end if;
 			when flow_header_rdm1 =>
-				if count = 48 then
+				if cnt_reg = 6 then -- 48bit
 					flow_fsm_next <= flow_header_rdm2;				
 				else 
 					flow_fsm_next <= flow_header_rdm1;
 				end if;
 			when flow_header_rdm2 =>
-				if count = 64 then
+				if cnt_reg = 8 then -- 64bit
 					flow_fsm_next <= flow_header_rdm3;
 				else 
 					flow_fsm_next <= flow_header_rdm2;
 				end if;
 			when flow_header_rdm3 =>
-				if count = 80 then
+				if cnt_reg = 10 then --80bit
 					flow_fsm_next <= flow_eoh;
 				else 
 					flow_fsm_next <= flow_header_rdm3;
 				end if; 	
 			when flow_eoh =>
-				if count = 88 then
+				if cnt_reg = 11 then --88bit
 					flow_fsm_next <= flow_crc0;
 				else 
 					flow_fsm_next <= flow_eoh;
 				end if; 	
 			when flow_crc0 =>
-				if count = 104 then
+				if cnt_reg = 13 then --104bit
 					flow_fsm_next <= flow_data0;
 				else 
 					flow_fsm_next <= flow_crc0;
 				end if; 	
 			when flow_data0 => 
-				if count = 8296 then
+				if cnt_reg = 1037 then --8296bit
 					flow_fsm_next <= flow_crc1;
 				else 
 					flow_fsm_next <= flow_data0;
 				end if; 	
 			when flow_crc1 =>
-				if count = 8312 then
+				if cnt_reg = 1039 then --8312bit
 					flow_fsm_next <= flow_data1;
 				else 
 					flow_fsm_next <= flow_crc1;
 				end if; 	
 			when flow_data1 =>
-				if count = 16504  then
+				if cnt_reg = 2063  then --16504bit
 					flow_fsm_next <= flow_crc2;
 				else 
 					flow_fsm_next <= flow_data1;
 				end if; 	
 			when flow_crc2 =>
-				if count = 16520 then
+				if cnt_reg = 2065 then --16520bit
 					flow_fsm_next <= flow_data2;
 				else 
 					flow_fsm_next <= flow_crc2;
 				end if; 	
 			when flow_data2 =>
-				if count = 24712 then
+				if cnt_reg = 3089 then --24712bit
 					flow_fsm_next <= flow_crc3;
 				else 
 					flow_fsm_next <= flow_data2;
 				end if; 	
 			when flow_crc3 =>
-				if count = 24728 then
+				if cnt_reg = 3091 then --24728bit
 					flow_fsm_next <= flow_data3;
 				else 
 					flow_fsm_next <= flow_crc3;
 				end if; 	
 			when flow_data3 =>
-				if count = 32920 then
+				if cnt_reg = 4115 then --32920bit
 					flow_fsm_next <= flow_eop;
 				else 
 					flow_fsm_next <= flow_data3;
 				end if; 	
 			when flow_eop =>
-				if count = 32936 then
+				if cnt_reg = 4117 then --32936bit
 					flow_fsm_next <= flow_idle;
 				else 
 					flow_fsm_next <= flow_eop;
@@ -234,10 +224,6 @@ process (clk, rst)
 	process(flow_fsm_reg)
 	begin
 				
-		case flow_fsm_reg is
-		when flow_idle => 
-				
-		when flow_sop => 
 				enable_MAINdmux <= (others => '0');
 				enable_HEADdmux <= (others => '0');
 				enable_RDMdmux <= (others => '0');
@@ -260,24 +246,36 @@ process (clk, rst)
 				enaDATA2 <= '0';
 				enaDATA3 <= '0';
 				
+		case flow_fsm_reg is
+		when flow_idle => 
+				
+		when flow_sop => 
+			--	enable_MAINdmux <= "00";
 		when flow_header_rlm => 
 				enable_MAINdmux <= "01";
 				enaRLM <= '1';
 		when flow_header_rdm0 => 
+				enable_MAINdmux <= "01";
 				enable_HEADdmux <= "1";
 				enable_RDMdmux <= "00";
 				enaRDM0 <= '1';
 		when flow_header_rdm1 => 
+				enable_MAINdmux <= "01";
+				enable_HEADdmux <= "1";
 				enable_RDMdmux <= "01";
 				enaRDM1 <= '1';
 		when flow_header_rdm2 => 
+				enable_MAINdmux <= "01";
+				enable_HEADdmux <= "1";
 				enable_RDMdmux <= "10";
 				enaRDM2 <= '1';
 		when flow_header_rdm3 => 	
+				enable_MAINdmux <= "01";
+				enable_HEADdmux <= "1";
 				enable_RDMdmux <= "11";
 				enaRDM3 <= '1';
 		when flow_eoh => 
-				enable_MAINdmux <= "00";
+			--	enable_MAINdmux <= "00";
 		when flow_crc0 => 
 				enable_MAINdmux <= "10";
 				enable_PACKdmux <= "00";
@@ -287,28 +285,37 @@ process (clk, rst)
 				enable_MODdmux0 <= "1";
 				enaDATA0 <= '1';
 		when flow_crc1 => 
+				enable_MAINdmux <= "10";
 				enable_PACKdmux <= "01";
-				enable_MODdmux1 <= "0";	
+				enable_MODdmux1 <= "0";
 				enaCRC1 <= '1';
 		when flow_data1 => 
+				enable_MAINdmux <= "10";
+				enable_PACKdmux <= "01";
 				enable_MODdmux1 <= "1";	
 				enaDATA1 <= '1';
 		when flow_crc2 => 	
+				enable_MAINdmux <= "10";
 				enable_PACKdmux <= "10";
-				enable_MODdmux2 <= "0";	
+				enable_MODdmux2 <= "0";
 				enaCRC2 <= '1';
 		when flow_data2 => 
-				enable_MODdmux2 <= "1";
+				enable_MAINdmux <= "10";
+				enable_PACKdmux <= "10";
+				enable_MODdmux2 <= "1";	
 				enaDATA2 <= '1';
 		when flow_crc3 => 
+				enable_MAINdmux <= "10";
 				enable_PACKdmux <= "11";
-				enable_MODdmux3 <= "0";		
+				enable_MODdmux3 <= "0";
 				enaCRC3 <= '1';
 		when flow_data3 => 
+				enable_MAINdmux <= "10";
+				enable_PACKdmux <= "11";
 				enable_MODdmux3 <= "1";	
 				enaDATA3 <= '1';
 		when flow_eop =>
-				enable_MAINdmux <= "00";
+				--enable_MAINdmux <= "00";
 				
 				
 	end case;
