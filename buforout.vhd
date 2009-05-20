@@ -25,18 +25,17 @@ entity buforout is
 		rst : in std_logic;
 		
 		bufout_send : in std_logic;
-		bufout_receive : in  std_logic_vector ( 2 downto 0 );
-		sel_mux 	: in std_logic_vector ( 1 downto 0 ); 
+		bufout_trans : in std_logic;
+		trans_mod : in  std_logic_vector ( 1 downto 0 );
 		status_index : in std_logic_vector ( 1 downto 0 );
 	--	status2_index : in std_logic_vector ( 1 downto 0 );
 	
-		
-	
 		--OUTPUTS
-		raport : out std_logic_vector (1 downto 0 ); --<<<<<<zmieniæ na 8bit!!
+		raport : out std_logic_vector (7 downto 0 ); --<<<<<<zmieniæ na 8bit!!
 		
-		bufout_rec_done : out std_logic;
-		bufout_sent_done : out std_logic
+		bufout_ready : out std_logic;
+		bufout_done : out std_logic
+		
 	);
 end buforout;
 -- Library Clause(s) (optional)
@@ -48,26 +47,18 @@ architecture data_flow of buforout is
 
 type BUFOUT_FSM_STATE_TYPE is (
 	bufout_idle,				--- stan spoczynkowy
-	--bufout_receiving,			--- stan odbierania danych 
-	bufout_receiving0,
-	bufout_receiving1,
-	bufout_receiving2,
-	bufout_receiving3,
+	bufout_receiving,			--- stan odbierania danych 
 	bufout_sending				--- stan wysy³ania raportu
 	);
 
 signal bufout_fsb_cur, bufout_fsb_next	: BUFOUT_FSM_STATE_TYPE; --- sygna³y automatu bufout
 
-signal bufout_ready, bufout_sent  : std_logic; 		--sygna³y do komunikacji miêdzy bufout a us
+signal ready_bufout, done_bufout : std_logic; 		--sygna³y do komunikacji miêdzy bufout a us
 
 
 signal enable1, enable2, enable3, enable4 : std_logic;
-signal  sel_dmux : std_logic_vector ( 1 downto 0 );
+signal sel_mux, sel_dmux, rap : std_logic_vector ( 1 downto 0 ); -------------<<<<
 
---signal count		  : integer range MIN to MAX;
---	signal stat1, stat2, stat3, stat4, statout : std_logic_vector ( 1 downto 0 );
---	signal sel : std_logic_vector ( 1 downto 0 );
---	signal status : std_logic_vector ( 1 downto 0 );
 
 --- rejestry w buforout. przechowuj¹ce statusy crc, 
 --component mux2x2
@@ -165,7 +156,7 @@ begin
 	
 	mux2 : mux4x2 
 		port map (
-			output => raport,
+			output => rap,   --------------------<<<<<
 			sel => sel_mux,
 			i1 => sig2_a,
 			i2 => sig2_b,
@@ -187,7 +178,7 @@ process (clk, rst)
 
 
 
-process(bufout_fsb_cur, bufout_receive, bufout_send)
+process(bufout_fsb_cur, bufout_trans, bufout_send, trans_mod)
 	begin
 		
 		sel_dmux <= "00";
@@ -195,62 +186,59 @@ process(bufout_fsb_cur, bufout_receive, bufout_send)
 		enable2 <= '0';
 		enable3 <= '0';
 		enable4 <= '0';
-	
-		bufout_sent <= '0';
+		done_bufout <= '0';
+		ready_bufout <= '0';	
 		
 		case bufout_fsb_cur is
 			
-			when bufout_idle => 
-				
-				if bufout_receive  = "001" then
-					bufout_fsb_next <= bufout_receiving0;
-				--	start_cnt <='1';	
-				elsif bufout_receive  = "010" then
-					bufout_fsb_next <= bufout_receiving1;
-				--	start_cnt <= '1';
-				elsif bufout_receive  = "011" then
-					bufout_fsb_next <= bufout_receiving2;
-				--	start_cnt <= '1';
-				elsif bufout_receive  = "100" then
-					bufout_fsb_next <= bufout_receiving3;
-				--	start_cnt <= '1';
-				else
-					if bufout_send = '1' then
+			when bufout_idle => 	
+					if bufout_trans = '1' then
+						bufout_fsb_next <= bufout_receiving;
+					elsif bufout_send = '1' then
 						bufout_fsb_next <= bufout_sending;
 					else
-						bufout_fsb_next <= bufout_idle;		
-					end if;
-				end if;		
-			when bufout_receiving0 =>
+						bufout_fsb_next <= bufout_idle;	
+						ready_bufout <= '1';	
+					end if;		
+			when bufout_receiving =>
 				
-					bufout_fsb_next <=bufout_idle;
-					sel_dmux <= "00";
-					enable1 <= '1';
-				
-			when bufout_receiving1 =>
-					bufout_fsb_next <= bufout_idle;
-					sel_dmux <= "01";
-					enable2 <= '1';
-				
-			when bufout_receiving2 =>
-		
-					bufout_fsb_next <=bufout_idle;
-					sel_dmux <= "10";
-					enable3 <= '1';
-				
-			when bufout_receiving3 =>
-				
-					bufout_fsb_next <=bufout_idle;
-					sel_dmux <= "11";
-					enable4 <= '1';
-			
+					if trans_mod  = "00" then
+						bufout_fsb_next <= bufout_idle;
+						ready_bufout <= '1';
+						done_bufout <= '1';
+						sel_dmux <= "00";
+						enable1 <= '1';			
+					elsif trans_mod  = "01" then
+						bufout_fsb_next <= bufout_idle;
+						ready_bufout <= '1';
+						done_bufout <= '1';
+						sel_dmux <= "01";
+						enable2 <= '1';
+					
+					elsif trans_mod  = "10" then
+						bufout_fsb_next <= bufout_idle;
+						ready_bufout <= '1';
+						done_bufout <= '1';
+						sel_dmux <= "10";
+						enable3 <= '1';
+					
+					elsif trans_mod  = "11" then
+						bufout_fsb_next <= bufout_idle;
+						ready_bufout <= '1';
+						done_bufout <= '1';
+						sel_dmux <= "11";
+						enable4 <= '1';
+					else 
+						bufout_fsb_next <= bufout_idle;
+					end if;	
 			
 			when bufout_sending =>
 				bufout_fsb_next <= bufout_idle;
-				bufout_sent <= '1';
+				ready_bufout <= '1';
 		end case;				
 			
 	end process;
-bufout_sent_done <= bufout_sent;	
+bufout_done <= done_bufout;	
+bufout_ready <= ready_bufout;
 	
 end data_flow;
