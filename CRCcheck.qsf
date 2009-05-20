@@ -36,25 +36,22 @@
 # -------------------------------------------------------------------------- #
 
 
-set_global_assignment -name FAMILY "Stratix II"
+set_global_assignment -name FAMILY Stratix
 set_global_assignment -name DEVICE AUTO
-set_global_assignment -name TOP_LEVEL_ENTITY buforin
+set_global_assignment -name TOP_LEVEL_ENTITY CRCcheck
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 9.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "23:33:23  MAY 03, 2009"
 set_global_assignment -name LAST_QUARTUS_VERSION 9.0
 set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (VHDL)"
 set_global_assignment -name EDA_OUTPUT_DATA_FORMAT VHDL -section_id eda_simulation
 set_global_assignment -name USE_GENERATED_PHYSICAL_CONSTRAINTS OFF -section_id eda_blast_fpga
-set_global_assignment -name DEVICE_FILTER_SPEED_GRADE FASTEST
+set_global_assignment -name DEVICE_FILTER_SPEED_GRADE ANY
 set_global_assignment -name SEARCH_PATH "f:\\workspaces\\quartus\\crc16hardwarecheck"
 set_global_assignment -name MISC_FILE "F:/workspaces/Quartus/crc16hardwarecheck/CRCcheck.dpf"
 set_global_assignment -name MISC_FILE "D:/workspaces/Quartus/crc16hardwarecheck/CRCcheck.dpf"
-set_global_assignment -name INCREMENTAL_VECTOR_INPUT_SOURCE buforin.vwf
-set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
-set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
-set_global_assignment -name LL_ROOT_REGION ON -section_id "Root Region"
-set_global_assignment -name LL_MEMBER_STATE LOCKED -section_id "Root Region"
-set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
+set_global_assignment -name SIMULATION_MODE FUNCTIONAL
+set_global_assignment -name USE_CONFIGURATION_DEVICE ON
+set_global_assignment -name VHDL_FILE us.vhd
 set_global_assignment -name VHDL_FILE ram.vhd
 set_global_assignment -name VHDL_FILE buforin.vhd
 set_global_assignment -name VHDL_FILE regs.vhd
@@ -67,3 +64,11 @@ set_global_assignment -name VECTOR_WAVEFORM_FILE CRCcheck.vwf
 set_global_assignment -name VHDL_FILE dmux.vhd
 set_global_assignment -name VHDL_FILE flowcontrol.vhd
 set_global_assignment -name VECTOR_WAVEFORM_FILE buforin.vwf
+set_global_assignment -name VECTOR_WAVEFORM_FILE ../crc16hardwarecheck/CRCcalc.vwf
+set_global_assignment -name VECTOR_WAVEFORM_FILE ../crc16hardwarecheck/compare.vwf
+set_global_assignment -name INCREMENTAL_VECTOR_INPUT_SOURCE ../crc16hardwarecheck/us.vwf
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_global_assignment -name LL_ROOT_REGION ON -section_id "Root Region"
+set_global_assignment -name LL_MEMBER_STATE LOCKED -section_id "Root Region"
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

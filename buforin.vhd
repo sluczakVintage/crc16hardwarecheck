@@ -12,7 +12,7 @@
 --
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+use ieee.std_logic_unsigned.all;
 use work.PCK_CRC16_D8.all;
 
 entity buforin is
@@ -23,17 +23,20 @@ entity buforin is
 		clk : in  std_logic ;
 		rst : in std_logic;
 		data  : in std_logic_vector ( 7 downto 0 );
-		sel : in std_logic_vector ( 1 downto 0 );
-		flow_in : in std_logic;   --<<----- >????????
+		sel : in std_logic_vector ( 1 downto 0 );  --<<----- >????????
+		flow_in : in std_logic;  
 		
 			--OUTPUTS
 		usb_endread : out std_logic;
-		index : out std_logic_vector ( 1 downto 0 );
-		status2_index : out std_logic_vector ( 1 downto 0 );
+	--	status2_index : out std_logic_vector ( 1 downto 0 );
 		data_index : out std_logic_vector ( 7 downto 0 );
-		CRC_index : out std_logic_vector ( 7 downto 0 ); ----<----- powinno byæ 16 bit
+		CRC_index : out std_logic_vector ( 15 downto 0 ); ----<----- powinno byæ 16 bit
+		mod_passed0 : out std_logic;
+		mod_passed1 : out std_logic;
+		mod_passed2 : out std_logic;
+		mod_passed3 : out std_logic	
 		
-		flow_out : out std_logic  --<<----- >????????
+	--	flow_out : out std_logic  --<<----- >????????
 	);
 end buforin;
 
@@ -65,7 +68,7 @@ component flowcontrol
 		
 		
 		--OUTPUTS
-		flow_out			: out std_logic;
+--		flow_out			: out std_logic;
 			-- enable g³ównego demultipleksera
 		enable_MAINdmux : out std_logic_vector ( 1 downto 0 );
 			-- enable demultimpleksera nag³ówka na liczbê modu³ów i d³ugoœæ modu³ów
@@ -79,7 +82,12 @@ component flowcontrol
 		enable_MODdmux1 : out std_logic_vector ( 0 downto 0 );	
 		enable_MODdmux2 : out std_logic_vector ( 0 downto 0 );	
 		enable_MODdmux3 : out std_logic_vector ( 0 downto 0 );	
-		ena_RLM, ena_RDM0, ena_RDM1, ena_RDM2, ena_RDM3, ena_CRC0, ena_CRC1, ena_CRC2, ena_CRC3, ena_DATA0, ena_DATA1, ena_DATA2, ena_DATA3 : out std_logic
+		ena_RLM, ena_RDM0, ena_RDM1, ena_RDM2, ena_RDM3, ena_CRC0, ena_CRC1, ena_CRC2, ena_CRC3, ena_DATA0, ena_DATA1, ena_DATA2, ena_DATA3 : out std_logic;
+		
+		mod_passed0 : out std_logic;
+		mod_passed1 : out std_logic;
+		mod_passed2 : out std_logic;
+		mod_passed3 : out std_logic	
 	);
 end component;
 
@@ -239,7 +247,7 @@ begin
 		rst	=> rst,		
 		flow_in	=> flow_in,		
 	
-		flow_out => flow_out,	
+	--	flow_out => flow_out,	
 		enable_MAINdmux => enable_MAINdmux, 
 		enable_HEADdmux => enable_HEADdmux, 	
 		enable_RDMdmux => enable_RDMdmux,
@@ -260,7 +268,11 @@ begin
 			ena_DATA0   => enaDATA0, 
 			ena_DATA1	=> enaDATA1, 
 			ena_DATA2	=> enaDATA2, 
-			ena_DATA3	=> enaDATA3
+			ena_DATA3	=> enaDATA3,
+			mod_passed0 => mod_passed0,
+			mod_passed1 => mod_passed1,
+			mod_passed2 => mod_passed2,
+			mod_passed3 => mod_passed3
 		);
 -------------------------------------
 --------MAIN DMUX--------------------
@@ -352,7 +364,7 @@ dmux_pack : dmux4x8
 
 	mux_crc : mux4x8
 		port map (
-			output => CRC_index,			----- tu powinien byæ sygna³ id¹cy do komparatora
+			output => junk,			----- tu powinien byæ sygna³ id¹cy do komparatora
 			sel => sel,
 			i1 => sig2_a_crc,
 			i2 => sig2_b_crc,

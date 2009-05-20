@@ -46,13 +46,45 @@ end CRCcheck;
 architecture structure of CRCcheck is
 
 	-- list of signals
-	signal index : std_logic_vector ( 1 downto 0 );
-	signal index_k : std_logic_vector ( 1 downto 0 );
-	signal status_index : std_logic_vector ( 1 downto 0 );
+	signal status_index, equal_crc : std_logic_vector ( 1 downto 0 );
 	signal status2_index : std_logic_vector ( 1 downto 0 );
 	signal data_index : std_logic_vector ( 7 downto 0 );
-	signal crc_index : std_logic_vector ( 15 downto 0 );
-	signal crc2_index : std_logic_vector ( 15 downto 0 );
+	signal CRC_index : std_logic_vector ( 15 downto 0 );
+	signal CRC2_index : std_logic_vector ( 15 downto 0 );
+	
+	signal calc_done, bufout_ready, bufout_done, mod_passed0, mod_passed1, mod_passed2, mod_passed3 : std_logic;	
+	signal flow_in, calc_start, bufout_trans, bufout_send, transmit_end : std_logic; ---<<<<< TRANSMIT END
+	signal trans_mod : std_logic_vector ( 1 downto 0 );
+	
+	-- US
+	
+component us
+	
+	port
+	(
+		-- Input ports
+		rst		   	: in std_logic;
+		clk		   	: in std_logic;
+		data_incoming : in std_logic;
+		calc_done	: in std_logic;
+		equal_crc : in std_logic_vector ( 1 downto 0 );	
+		bufout_ready : in std_logic;
+		bufout_done : in std_logic;
+		mod_passed0 : in std_logic;
+		mod_passed1 : in std_logic;
+		mod_passed2 : in std_logic;
+		mod_passed3 : in std_logic;	
+
+		-- Output ports
+		flow_in	: out std_logic;
+		
+		status_index : out std_logic_vector ( 1 downto 0 );
+		calc_start	: out std_logic;
+		bufout_trans: out std_logic;
+		bufout_send	: out std_logic;
+		trans_mod : out std_logic_vector ( 1 downto 0 )
+	);
+end component;
 	
 	
 	-- BUFOR.IN
@@ -64,13 +96,17 @@ component buforin
 		clk : in std_logic;
 		rst : in std_logic;
 		data  : in std_logic_vector ( 7 downto 0 );
+		flow_in : in std_logic;
 		
 			--OUTPUTS
 		usb_endread : out std_logic;
-		index : out std_logic_vector ( 1 downto 0 );
-		status2_index : out std_logic_vector ( 1 downto 0 );
+	--	status2_index : out std_logic_vector ( 1 downto 0 );
 		data_index : out std_logic_vector ( 7 downto 0 );
-		CRC_index : out std_logic_vector ( 15 downto 0 )
+		CRC_index : out std_logic_vector ( 15 downto 0 );
+		mod_passed0 : out std_logic;
+		mod_passed1 : out std_logic;
+		mod_passed2 : out std_logic;
+		mod_passed3 : out std_logic	
 		
 	);
 end component;	
@@ -79,31 +115,15 @@ component crccalc
 	port
 	(
 	
-		--INPUTS
-		--@@ TODO dodaæ stygna³y z US
 		clk : in std_logic;
 		rst : in std_logic;
-		index : in std_logic_vector ( 1 downto 0 );
+		calc_start : in std_logic;
 		data_index : in std_logic_vector (7 downto 0 );
-
+		transmit_end : in std_logic;-- DO ZMIANY
 		--OUTPUTS
-		index_k : out std_logic_vector ( 1 downto 0 );
+		calc_done	: out std_logic;
 		crc2_index : out std_logic_vector (15 downto 0 )
 		
-	);
-end component;
-	
-component buforout
-	port
-	(
-		--INPUTS
-		--@@ TODO dodaæ stygna³y z US
-		clk : in std_logic;
-		rst : in std_logic;
-		status_index : in std_logic_vector ( 1 downto 0 );
-		status2_index : in std_logic_vector (1 downto 0 );
-		--OUTPUTS
-		raport : out std_logic_vector (7 downto 0 )
 	);
 end component;
 
@@ -112,61 +132,112 @@ component comparator
 	(
 		--INPUTS
 		--@@ TODO dodaæ stygna³y z US
-		index : in std_logic_vector ( 1 downto 0 );
-		index_k : in std_logic_vector ( 1 downto 0 );
 		CRC_index : in std_logic_vector ( 15 downto 0 );
 		CRC2_index : in std_logic_vector ( 15 downto 0 );
 		--OUTPUTS
-		status_index : out std_logic_vector ( 1 downto 0 )
+		equal_crc : out std_logic_vector ( 1 downto 0 )
 	);
 end component;
 	
+component buforout
+	port
+	(
+		clk : in std_logic;
+		rst : in std_logic;
+		
+		bufout_send : in std_logic;
+		bufout_trans : in std_logic;
+		trans_mod : in  std_logic_vector ( 1 downto 0 );
+		status_index : in std_logic_vector ( 1 downto 0 );
+	--	status2_index : in std_logic_vector ( 1 downto 0 );
+			--OUTPUTS
+		raport : out std_logic_vector (7 downto 0 ); --<<<<<<zmieniæ na 8bit!!
+		bufout_ready : out std_logic;
+		bufout_done : out std_logic
+	);
+end component;
+
+
 begin
+
+	u_s: us 
+		port map (
+			clk	=> clk,
+			rst	=> rst,
+			data_incoming => usb_rxf,
+			calc_done => calc_done,
+			equal_crc => equal_crc,
+			bufout_ready => bufout_ready,
+			bufout_done => bufout_done,
+			mod_passed0 => mod_passed0,
+			mod_passed1 => mod_passed1,
+			mod_passed2 => mod_passed2,
+			mod_passed3 => mod_passed3,	
+			
+			flow_in	=> flow_in,
+			status_index => status_index,
+			calc_start => calc_start,
+			bufout_trans => bufout_trans,
+			bufout_send	=> bufout_send,
+			trans_mod => trans_mod
+		);
+		
 	bufor_in: buforin 
 		port map (
 			clk => clk,
 			rst => rst,
 			data => data,
+			flow_in	=> flow_in,
 			
 			usb_endread => usb_endread,
-			index => index,
 			data_index => data_index,
 			CRC_index => CRC_index,
-			status2_index => status2_index
+		--	status2_index => status2_index,
+			
+			mod_passed0 => mod_passed0,
+			mod_passed1 => mod_passed1,
+			mod_passed2 => mod_passed2,
+			mod_passed3 => mod_passed3
 		);
 		
 	crc_calc : crccalc	
 		port map (
 			clk => clk,
 			rst => rst,
-			index => index,
 			data_index => data_index,
+			calc_start => calc_start,
+			transmit_end => transmit_end,
 			
-			index_k => index_k,
+			calc_done => calc_done,
 			crc2_index => crc2_index
 			
 		);
-		
-	bufor_out : buforout
-		port map (
-			clk => clk,
-			rst => rst,
-			status_index => status_index,
-			status2_index => status2_index,
-			
-			raport => raport
-		);
-		
 	comparator_crc : comparator
 		port map (
-			index => index,
-			index_k => index_k,
 			CRC_index => CRC_index,
 			CRC2_index => CRC2_index,
 			
-			status_index => status_index
+			equal_crc => equal_crc
 			
 		);
+			
+	bufor_out : buforout
+		port map (
+		
+		clk => clk,
+		rst => rst,
+		bufout_send => bufout_send,
+		bufout_trans => bufout_trans,
+		trans_mod => trans_mod, 
+			
+		bufout_done => bufout_done, 
+		bufout_ready => bufout_ready,
+		status_index => status_index,
+	--	status2_index => status2_index,  ----<<<<<<<<<<<<<<<<
+		raport => raport
+		);
+		
+	
 end structure;
 	
 	

@@ -32,7 +32,7 @@ entity flowcontrol is
 		
 		
 		--OUTPUTS
-		flow_out			: out std_logic;
+--		flow_out			: out std_logic;
 			-- enable g³ównego demultipleksera
 		enable_MAINdmux : out std_logic_vector ( 1 downto 0 );
 			-- enable demultimpleksera nag³ówka na liczbê modu³ów i d³ugoœæ modu³ów
@@ -46,7 +46,12 @@ entity flowcontrol is
 		enable_MODdmux1 : out std_logic_vector ( 0 downto 0 );	
 		enable_MODdmux2 : out std_logic_vector ( 0 downto 0 );	
 		enable_MODdmux3 : out std_logic_vector ( 0 downto 0 );	
-		ena_RLM, ena_RDM0, ena_RDM1, ena_RDM2, ena_RDM3, ena_CRC0, ena_CRC1, ena_CRC2, ena_CRC3, ena_DATA0, ena_DATA1, ena_DATA2, ena_DATA3 : out std_logic
+		ena_RLM, ena_RDM0, ena_RDM1, ena_RDM2, ena_RDM3, ena_CRC0, ena_CRC1, ena_CRC2, ena_CRC3, ena_DATA0, ena_DATA1, ena_DATA2, ena_DATA3 : out std_logic;
+		
+		mod_passed0 : out std_logic;  ---------------------------
+		mod_passed1 : out std_logic;  ---------------------------OBS£U¯YÆ
+		mod_passed2 : out std_logic;  ---------------------------
+		mod_passed3 : out std_logic	  ---------------------------
 		
 	);
 end flowcontrol;

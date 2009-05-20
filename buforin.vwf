@@ -482,6 +482,146 @@ SIGNAL("flowcontrol:uberflow|ena_RLM")
 	PARENT = "";
 }
 
+SIGNAL("flowcontrol:uberflow|cnt_reg")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = BUS;
+	WIDTH = 13;
+	LSB_INDEX = 0;
+	DIRECTION = REGISTERED;
+	PARENT = "";
+}
+
+SIGNAL("flowcontrol:uberflow|cnt_reg[12]")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = REGISTERED;
+	PARENT = "flowcontrol:uberflow|cnt_reg";
+}
+
+SIGNAL("flowcontrol:uberflow|cnt_reg[11]")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = REGISTERED;
+	PARENT = "flowcontrol:uberflow|cnt_reg";
+}
+
+SIGNAL("flowcontrol:uberflow|cnt_reg[10]")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = REGISTERED;
+	PARENT = "flowcontrol:uberflow|cnt_reg";
+}
+
+SIGNAL("flowcontrol:uberflow|cnt_reg[9]")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = REGISTERED;
+	PARENT = "flowcontrol:uberflow|cnt_reg";
+}
+
+SIGNAL("flowcontrol:uberflow|cnt_reg[8]")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = REGISTERED;
+	PARENT = "flowcontrol:uberflow|cnt_reg";
+}
+
+SIGNAL("flowcontrol:uberflow|cnt_reg[7]")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = REGISTERED;
+	PARENT = "flowcontrol:uberflow|cnt_reg";
+}
+
+SIGNAL("flowcontrol:uberflow|cnt_reg[6]")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = REGISTERED;
+	PARENT = "flowcontrol:uberflow|cnt_reg";
+}
+
+SIGNAL("flowcontrol:uberflow|cnt_reg[5]")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = REGISTERED;
+	PARENT = "flowcontrol:uberflow|cnt_reg";
+}
+
+SIGNAL("flowcontrol:uberflow|cnt_reg[4]")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = REGISTERED;
+	PARENT = "flowcontrol:uberflow|cnt_reg";
+}
+
+SIGNAL("flowcontrol:uberflow|cnt_reg[3]")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = REGISTERED;
+	PARENT = "flowcontrol:uberflow|cnt_reg";
+}
+
+SIGNAL("flowcontrol:uberflow|cnt_reg[2]")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = REGISTERED;
+	PARENT = "flowcontrol:uberflow|cnt_reg";
+}
+
+SIGNAL("flowcontrol:uberflow|cnt_reg[1]")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = REGISTERED;
+	PARENT = "flowcontrol:uberflow|cnt_reg";
+}
+
+SIGNAL("flowcontrol:uberflow|cnt_reg[0]")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = REGISTERED;
+	PARENT = "flowcontrol:uberflow|cnt_reg";
+}
+
 TRANSITION_LIST("clk")
 {
 	NODE
@@ -1087,8 +1227,7 @@ TRANSITION_LIST("rst")
 	NODE
 	{
 		REPEAT = 1;
-		LEVEL 1 FOR 10.0;
-		LEVEL 0 FOR 990.0;
+		LEVEL 0 FOR 1000.0;
 	}
 }
 
@@ -1218,6 +1357,123 @@ TRANSITION_LIST("flowcontrol:uberflow|ena_RLM")
 	}
 }
 
+TRANSITION_LIST("flowcontrol:uberflow|cnt_reg[12]")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL U FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("flowcontrol:uberflow|cnt_reg[11]")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL U FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("flowcontrol:uberflow|cnt_reg[10]")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL U FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("flowcontrol:uberflow|cnt_reg[9]")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL U FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("flowcontrol:uberflow|cnt_reg[8]")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL U FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("flowcontrol:uberflow|cnt_reg[7]")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL U FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("flowcontrol:uberflow|cnt_reg[6]")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL U FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("flowcontrol:uberflow|cnt_reg[5]")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL U FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("flowcontrol:uberflow|cnt_reg[4]")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL U FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("flowcontrol:uberflow|cnt_reg[3]")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL U FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("flowcontrol:uberflow|cnt_reg[2]")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL U FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("flowcontrol:uberflow|cnt_reg[1]")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL U FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("flowcontrol:uberflow|cnt_reg[0]")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL U FOR 1000.0;
+	}
+}
+
 DISPLAY_LINE
 {
 	CHANNEL = "clk";
@@ -1319,37 +1575,35 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "enable_HEADdmux";
+	CHANNEL = "rst";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 10;
 	TREE_LEVEL = 0;
-	CHILDREN = 11;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "flow_in";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 11;
+	TREE_LEVEL = 0;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "enable_HEADdmux";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 12;
+	TREE_LEVEL = 0;
+	CHILDREN = 13;
 }
 
 DISPLAY_LINE
 {
 	CHANNEL = "enable_HEADdmux[0]";
-	EXPAND_STATUS = COLLAPSED;
-	RADIX = Binary;
-	TREE_INDEX = 11;
-	TREE_LEVEL = 1;
-	PARENT = 10;
-}
-
-DISPLAY_LINE
-{
-	CHANNEL = "enable_MAINdmux";
-	EXPAND_STATUS = COLLAPSED;
-	RADIX = Binary;
-	TREE_INDEX = 12;
-	TREE_LEVEL = 0;
-	CHILDREN = 13, 14;
-}
-
-DISPLAY_LINE
-{
-	CHANNEL = "enable_MAINdmux[1]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 13;
@@ -1359,37 +1613,37 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "enable_MAINdmux[0]";
+	CHANNEL = "enable_MAINdmux";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 14;
+	TREE_LEVEL = 0;
+	CHILDREN = 15, 16;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "enable_MAINdmux[1]";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 15;
 	TREE_LEVEL = 1;
-	PARENT = 12;
+	PARENT = 14;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "enable_MAINdmux[0]";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 16;
+	TREE_LEVEL = 1;
+	PARENT = 14;
 }
 
 DISPLAY_LINE
 {
 	CHANNEL = "enable_MODdmux0";
-	EXPAND_STATUS = COLLAPSED;
-	RADIX = Binary;
-	TREE_INDEX = 15;
-	TREE_LEVEL = 0;
-	CHILDREN = 16;
-}
-
-DISPLAY_LINE
-{
-	CHANNEL = "enable_MODdmux0[0]";
-	EXPAND_STATUS = COLLAPSED;
-	RADIX = Binary;
-	TREE_INDEX = 16;
-	TREE_LEVEL = 1;
-	PARENT = 15;
-}
-
-DISPLAY_LINE
-{
-	CHANNEL = "enable_MODdmux1";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 17;
@@ -1399,7 +1653,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "enable_MODdmux1[0]";
+	CHANNEL = "enable_MODdmux0[0]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 18;
@@ -1409,7 +1663,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "enable_MODdmux2";
+	CHANNEL = "enable_MODdmux1";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 19;
@@ -1419,7 +1673,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "enable_MODdmux2[0]";
+	CHANNEL = "enable_MODdmux1[0]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 20;
@@ -1429,7 +1683,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "enable_MODdmux3";
+	CHANNEL = "enable_MODdmux2";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 21;
@@ -1439,7 +1693,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "enable_MODdmux3[0]";
+	CHANNEL = "enable_MODdmux2[0]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 22;
@@ -1449,17 +1703,17 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "enable_PACKdmux";
+	CHANNEL = "enable_MODdmux3";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 23;
 	TREE_LEVEL = 0;
-	CHILDREN = 24, 25;
+	CHILDREN = 24;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "enable_PACKdmux[1]";
+	CHANNEL = "enable_MODdmux3[0]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 24;
@@ -1469,12 +1723,32 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "enable_PACKdmux[0]";
+	CHANNEL = "enable_PACKdmux";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 25;
+	TREE_LEVEL = 0;
+	CHILDREN = 26, 27;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "enable_PACKdmux[1]";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 26;
 	TREE_LEVEL = 1;
-	PARENT = 23;
+	PARENT = 25;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "enable_PACKdmux[0]";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 27;
+	TREE_LEVEL = 1;
+	PARENT = 25;
 }
 
 DISPLAY_LINE
@@ -1482,9 +1756,9 @@ DISPLAY_LINE
 	CHANNEL = "enable_RDMdmux";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
-	TREE_INDEX = 26;
+	TREE_INDEX = 28;
 	TREE_LEVEL = 0;
-	CHILDREN = 27, 28;
+	CHILDREN = 29, 30;
 }
 
 DISPLAY_LINE
@@ -1492,9 +1766,9 @@ DISPLAY_LINE
 	CHANNEL = "enable_RDMdmux[1]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
-	TREE_INDEX = 27;
+	TREE_INDEX = 29;
 	TREE_LEVEL = 1;
-	PARENT = 26;
+	PARENT = 28;
 }
 
 DISPLAY_LINE
@@ -1502,32 +1776,14 @@ DISPLAY_LINE
 	CHANNEL = "enable_RDMdmux[0]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
-	TREE_INDEX = 28;
-	TREE_LEVEL = 1;
-	PARENT = 26;
-}
-
-DISPLAY_LINE
-{
-	CHANNEL = "flow_in";
-	EXPAND_STATUS = COLLAPSED;
-	RADIX = Binary;
-	TREE_INDEX = 29;
-	TREE_LEVEL = 0;
-}
-
-DISPLAY_LINE
-{
-	CHANNEL = "rst";
-	EXPAND_STATUS = COLLAPSED;
-	RADIX = Binary;
 	TREE_INDEX = 30;
-	TREE_LEVEL = 0;
+	TREE_LEVEL = 1;
+	PARENT = 28;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "flowcontrol:uberflow|flow_fsm_reg";
+	CHANNEL = "flowcontrol:uberflow|ena_CRC0";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 31;
@@ -1536,7 +1792,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "flowcontrol:uberflow|ena_CRC0";
+	CHANNEL = "flowcontrol:uberflow|ena_CRC1";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 32;
@@ -1545,7 +1801,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "flowcontrol:uberflow|ena_CRC1";
+	CHANNEL = "flowcontrol:uberflow|ena_CRC2";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 33;
@@ -1554,7 +1810,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "flowcontrol:uberflow|ena_CRC2";
+	CHANNEL = "flowcontrol:uberflow|ena_CRC3";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 34;
@@ -1563,7 +1819,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "flowcontrol:uberflow|ena_CRC3";
+	CHANNEL = "flowcontrol:uberflow|ena_DATA0";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 35;
@@ -1572,7 +1828,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "flowcontrol:uberflow|ena_DATA0";
+	CHANNEL = "flowcontrol:uberflow|ena_DATA1";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 36;
@@ -1581,7 +1837,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "flowcontrol:uberflow|ena_DATA1";
+	CHANNEL = "flowcontrol:uberflow|ena_DATA2";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 37;
@@ -1590,7 +1846,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "flowcontrol:uberflow|ena_DATA2";
+	CHANNEL = "flowcontrol:uberflow|ena_DATA3";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 38;
@@ -1599,7 +1855,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "flowcontrol:uberflow|ena_DATA3";
+	CHANNEL = "flowcontrol:uberflow|ena_RDM0";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 39;
@@ -1608,7 +1864,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "flowcontrol:uberflow|ena_RDM0";
+	CHANNEL = "flowcontrol:uberflow|ena_RDM1";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 40;
@@ -1617,7 +1873,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "flowcontrol:uberflow|ena_RDM1";
+	CHANNEL = "flowcontrol:uberflow|ena_RDM2";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 41;
@@ -1626,7 +1882,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "flowcontrol:uberflow|ena_RDM2";
+	CHANNEL = "flowcontrol:uberflow|ena_RDM3";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 42;
@@ -1635,7 +1891,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "flowcontrol:uberflow|ena_RDM3";
+	CHANNEL = "flowcontrol:uberflow|ena_RLM";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 43;
@@ -1644,10 +1900,150 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "flowcontrol:uberflow|ena_RLM";
+	CHANNEL = "flowcontrol:uberflow|cnt_reg";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 44;
+	TREE_LEVEL = 0;
+	CHILDREN = 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "flowcontrol:uberflow|cnt_reg[12]";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 45;
+	TREE_LEVEL = 1;
+	PARENT = 44;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "flowcontrol:uberflow|cnt_reg[11]";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 46;
+	TREE_LEVEL = 1;
+	PARENT = 44;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "flowcontrol:uberflow|cnt_reg[10]";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 47;
+	TREE_LEVEL = 1;
+	PARENT = 44;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "flowcontrol:uberflow|cnt_reg[9]";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 48;
+	TREE_LEVEL = 1;
+	PARENT = 44;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "flowcontrol:uberflow|cnt_reg[8]";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 49;
+	TREE_LEVEL = 1;
+	PARENT = 44;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "flowcontrol:uberflow|cnt_reg[7]";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 50;
+	TREE_LEVEL = 1;
+	PARENT = 44;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "flowcontrol:uberflow|cnt_reg[6]";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 51;
+	TREE_LEVEL = 1;
+	PARENT = 44;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "flowcontrol:uberflow|cnt_reg[5]";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 52;
+	TREE_LEVEL = 1;
+	PARENT = 44;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "flowcontrol:uberflow|cnt_reg[4]";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 53;
+	TREE_LEVEL = 1;
+	PARENT = 44;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "flowcontrol:uberflow|cnt_reg[3]";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 54;
+	TREE_LEVEL = 1;
+	PARENT = 44;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "flowcontrol:uberflow|cnt_reg[2]";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 55;
+	TREE_LEVEL = 1;
+	PARENT = 44;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "flowcontrol:uberflow|cnt_reg[1]";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 56;
+	TREE_LEVEL = 1;
+	PARENT = 44;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "flowcontrol:uberflow|cnt_reg[0]";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 57;
+	TREE_LEVEL = 1;
+	PARENT = 44;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "flowcontrol:uberflow|flow_fsm_reg";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 58;
 	TREE_LEVEL = 0;
 }
 

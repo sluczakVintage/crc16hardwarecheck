@@ -22,10 +22,8 @@ entity us is
 		rst		   	: in std_logic;
 		clk		   	: in std_logic;
 		data_incoming : in std_logic;
-		calc_ready	: in std_logic;
 		calc_done	: in std_logic;
-		comp_ready	: in std_logic;
-		comp_done	: in std_logic;
+		equal_crc : in std_logic_vector ( 1 downto 0 );	
 		bufout_ready : in std_logic;
 		bufout_done : in std_logic;
 		mod_passed0 : in std_logic;
@@ -35,14 +33,12 @@ entity us is
 
 		-- Output ports
 		flow_in	: out std_logic;
+		
+		status_index : out std_logic_vector ( 1 downto 0 );
 		calc_start	: out std_logic;
-		comp_start	: out std_logic;
 		bufout_trans: out std_logic;
-		bufout_send	: out std_logic
---		trans_mod0 : out std_logic;
---		trans_mod1 : out std_logic;
---		trans_mod2 : out std_logic;
---		trans_mod3 : out std_logic
+		bufout_send	: out std_logic;
+		trans_mod : out std_logic_vector ( 1 downto 0 )
 	);
 end us;
 
@@ -68,18 +64,23 @@ signal main_fsb_reg, main_fsb_next	: MAIN_FSM_STATE_TYPE;
 
 type PROC_FSM_STATE_TYPE is (
 	proc_fsb_idle,
-	proc_fsb_queue1,
 	proc_fsb_calc,
-	proc_fsb_queue2,
 	proc_fsb_comp,
 	proc_fsb_queue3,
 	proc_fsb_transmit
 	);
 signal proc_fsb_reg, proc_fsb_next	: PROC_FSM_STATE_TYPE;	
 
+type COMP_FSM_STATE_TYPE is (
+	comp_fsb_idle,
+	comp_fsb_compare,
+	comp_fsb_processed
+	);
+signal comp_fsb_reg, comp_fsb_next	: COMP_FSM_STATE_TYPE;
 
-signal flow, start_processing, send : std_logic;
+signal flow, start_processing, send_bufout : std_logic;
 signal mod_processed, start_calc, start_comp, start_trans : std_logic;
+signal mod_trans, index_status  : std_logic_vector ( 1 downto 0 );
 
 begin
 -- Opis dzialania automatu glownego
@@ -97,8 +98,9 @@ process (main_fsb_reg, mod_processed, data_incoming, mod_passed0, mod_passed1, m
 begin
 	start_processing <= '0';
 	flow <= '0';
-	send <= '0';
-
+	send_bufout <= '0';
+	mod_trans <= "00";
+	
 	case main_fsb_reg is
 		when main_fsb_idle =>   -- jesli dane wchodza, zacznij je odbierac, inaczej czekaj
 			if data_incoming = '0' then
@@ -112,52 +114,67 @@ begin
 				main_fsb_next <= main_fsb_receive;
 			else
 				main_fsb_next <= main_fsb_proc0;
+				mod_trans <= "00";
 				start_processing <= '1'; -- zacznij przetwarzanie
 			end if;
 		when main_fsb_proc0 => -- jesli dane z pierwszego pakietu zostaly odebrane, czekaj na zakonczenie przetwarzania
 			if mod_passed1 = '1' then
+				mod_trans <= "00";
 				main_fsb_next <= main_fsb_busy0;
 			else
+				mod_trans <= "00";
 				main_fsb_next <= main_fsb_proc0;
 			end if;
 		when main_fsb_busy0 => -- jesli dane przetworzone, rozpocznij przetwarzanie nastepnych
 			if mod_processed = '0' then
+				mod_trans <= "00";
 				main_fsb_next <= main_fsb_busy0;
 			else
 				main_fsb_next <= main_fsb_proc1;
+				mod_trans <= "01";
 				start_processing <= '1'; -- zacznij przetwarzanie
 			end if;
 		when main_fsb_proc1 => -- jesli dane z drugiego pakietu zostaly odebrane, czekaj na zakonczenie przetwarzania
 			if mod_passed2 = '1' then
+				mod_trans <= "01";
 				main_fsb_next <= main_fsb_busy1;
 			else
+				mod_trans <= "01";
 				main_fsb_next <= main_fsb_proc1;
 			end if;
 		when main_fsb_busy1 => -- jesli dane przetworzone, rozpocznij przetwarzanie nastepnych
 			if mod_processed = '0' then
+				mod_trans <= "01";
 				main_fsb_next <= main_fsb_busy1;
 			else
 				main_fsb_next <= main_fsb_proc2;
+				mod_trans <= "10";
 				start_processing <= '1'; -- zacznij przetwarzanie
 			end if;
 		when main_fsb_proc2 => -- jesli dane z trzeciego pakietu zostaly odebrane, czekaj na zakonczenie przetwarzania
 			if mod_passed3 = '1' then
+				mod_trans <= "10";
 				main_fsb_next <= main_fsb_busy2;
 				flow <= '0'; -- zakoncz przeplyw
 			else
+				mod_trans <= "10";
 				main_fsb_next <= main_fsb_proc2;
 			end if;
 		when main_fsb_busy2 => -- jesli dane przetworzone, rozpocznij przetwarzanie nastepnych
 			if mod_processed = '0' then
+				mod_trans <= "10";
 				main_fsb_next <= main_fsb_busy2;
 			else
 				main_fsb_next <= main_fsb_proc3;
+				mod_trans <= "11";
 				start_processing <= '1'; -- zacznij przetwarzanie
 			end if;
 		when main_fsb_proc3 => -- jesli dane przetworzone, zacznij wysylanie
 			if mod_processed = '0' then
+				mod_trans <= "11";
 				main_fsb_next <= main_fsb_proc3;
 			else
+				mod_trans <= "11";
 				main_fsb_next <= main_fsb_send;
 			end if;
 		when main_fsb_send => -- jesli buforout gotowy, rozpocznij wysylanie
@@ -165,7 +182,7 @@ begin
 				main_fsb_next <= main_fsb_send;
 			else
 				main_fsb_next <= main_fsb_idle;
-				send <= '1'; -- zacznij przesylanie
+				send_bufout <= '1'; -- zacznij przesylanie
 			end if;
 	end case;
 end process;
@@ -181,46 +198,32 @@ end process;
 	end process;
 --	-- Funkcja przejsc-wyjsc
 	
-process (proc_fsb_reg, start_processing, calc_ready, calc_done, comp_ready, comp_done, bufout_ready, bufout_done)
+process (proc_fsb_reg, start_processing, calc_done, bufout_ready, bufout_done, equal_crc)
 begin
 start_calc <= '0';
-start_comp <= '0';
 start_trans <= '0';
 mod_processed <= '0';
+index_status <= "00";
 	case proc_fsb_reg is
 		when proc_fsb_idle =>  
-			if start_processing = '0' then
+			if start_processing = '0' then 
 				proc_fsb_next <= proc_fsb_idle;
-			else
-				proc_fsb_next <= proc_fsb_queue1;
-			end if;
-		when proc_fsb_queue1 =>  
-			if calc_ready ='0' then
-				proc_fsb_next <= proc_fsb_queue1;
-			else 
+			else						-- jesli jest rozkaz zacznij przetwarzac
 				proc_fsb_next <= proc_fsb_calc;
 				start_calc <= '1'; 
 			end if;
-		when proc_fsb_calc =>
+		when proc_fsb_calc =>			-- przelicz CRC modulu
 			if calc_done = '0' then
 				proc_fsb_next <= proc_fsb_calc;
 			else
-				proc_fsb_next <= proc_fsb_queue2;
-			end if;
-		when proc_fsb_queue2 =>
-			if comp_ready = '0' then
-				proc_fsb_next <= proc_fsb_queue2;
-			else
 				proc_fsb_next <= proc_fsb_comp;
-				start_comp <= '1';
 			end if;
 		when proc_fsb_comp =>
-			if comp_done = '0' then
-				proc_fsb_next <= proc_fsb_comp;
-			else
+				-- przekierowac multipleksery i aktywowac REJESTRY (jesli trzeba) TODO
+				index_status <= equal_crc;
 				proc_fsb_next <= proc_fsb_queue3;
-			end if;
-		when proc_fsb_queue3 =>
+			
+		when proc_fsb_queue3 =>  -- ta kolejka jest POTRZEBNA (bo buforout moze jeszcze wysylac jednoczesnie)
 			if bufout_ready = '0' then
 				proc_fsb_next <= proc_fsb_queue3;
 			else
@@ -237,9 +240,14 @@ mod_processed <= '0';
 		end case;
 
 end process;
+
+
+
 flow_in <= flow;
-bufout_send <= send;
+
+status_index <= index_status;
+trans_mod <= mod_trans;
+bufout_send <= send_bufout;
 calc_start	<= start_calc;
-comp_start	<= start_comp;
 bufout_trans <= start_trans;
 end rtl;
