@@ -12,7 +12,7 @@
 --
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+use ieee.std_logic_unsigned.all;
 
 -- Rejestr 8bit
 entity reg8 is
@@ -106,7 +106,7 @@ use ieee.numeric_std.all;
 
 
 --rejestr 16bit
-entity reg16 is
+entity reg16 is 
 	port
 	(
 	
@@ -119,7 +119,7 @@ entity reg16 is
 		
 
 		--OUTPUTS
-		q : out std_logic_vector ( 7 downto 0 )
+		q : out std_logic_vector ( 15 downto 0 )
 		
 	);
 end reg16;
@@ -128,23 +128,28 @@ end reg16;
 architecture data_flow of reg16 is
 
 	signal q_reg, q_next : std_logic_vector ( 7 downto 0 );
+	signal q_16bit_reg : std_logic_vector ( 15 downto 0 );
 
 begin
+	
 	process(clk, rst)
 	begin
 		if(rst='1') then
 			q_reg <= (others => '0');
+			q_16bit_reg <= (others => '0');
 		elsif rising_edge(clk) then
 			q_reg <= q_next;
+			q_16bit_reg <= (q_reg & q_next);
 		end if;
 	end process;
 	
 	q_next <= d when ena = '1' else
 			q_reg;
-			
-	q <= q_reg;
 	
+	q <= q_16bit_reg;
 end data_flow;
+
+
 
 library ieee;
 use ieee.std_logic_1164.all;

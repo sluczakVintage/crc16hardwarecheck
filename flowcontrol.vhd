@@ -46,8 +46,8 @@ entity flowcontrol is
 		enable_MODdmux1 : out std_logic_vector ( 0 downto 0 );	
 		enable_MODdmux2 : out std_logic_vector ( 0 downto 0 );	
 		enable_MODdmux3 : out std_logic_vector ( 0 downto 0 );	
-		ena_RLM, ena_RDM0, ena_RDM1, ena_RDM2, ena_RDM3, ena_CRC0, ena_CRC1, ena_CRC2, ena_CRC3, ena_DATA0, ena_DATA1, ena_DATA2, ena_DATA3 : out std_logic;
-		
+		ena_RLM, ena_RDM0, ena_RDM1, ena_RDM2, ena_RDM3, ena_CRC0, ena_CRC1, ena_CRC2, ena_CRC3, wen_DATA0, wen_DATA1, wen_DATA2, wen_DATA3 : out std_logic;
+		addr_cnt_clr : out std_logic;
 		mod_passed0 : out std_logic;  ---------------------------
 		mod_passed1 : out std_logic;  ---------------------------OBS£U¯YÆ
 		mod_passed2 : out std_logic;  ---------------------------
@@ -80,10 +80,11 @@ type FLOW_FSM_STATE_TYPE is (
 	
 signal flow_fsm_reg, flow_fsm_next	:FLOW_FSM_STATE_TYPE;
 
-signal enaRLM, enaRDM0, enaRDM1, enaRDM2, enaRDM3, enaCRC0, enaCRC1, enaCRC2, enaCRC3, enaDATA0, enaDATA1, enaDATA2, enaDATA3 : std_logic;
+signal enaRLM, enaRDM0, enaRDM1, enaRDM2, enaRDM3, enaCRC0, enaCRC1, enaCRC2, enaCRC3, wrenDATA0, wrenDATA1, wrenDATA2, wrenDATA3 : std_logic;
 
 -- Licznik jako rejestr - sygna³y
 signal cnt_reg, cnt_next: std_logic_vector (12 downto 0);	
+
 
 begin
 -- Licznik jako rejestr 13bit
@@ -103,8 +104,8 @@ begin
 		else
 			cnt_next <= cnt_reg + "1";
 		end if;
-	end process;
-
+	end process;			  
+	
 	
 
 --------------------------------------------------------------
@@ -115,10 +116,10 @@ process (clk, rst)
 		elsif rising_edge(clk) then
 			flow_fsm_reg <= flow_fsm_next;
 		end if;
-	end process;
+end process;
 
 	-- Funkcja przejsc-wyjsc
-	process(flow_fsm_reg, flow_in, cnt_reg)
+process(flow_fsm_reg, flow_in, cnt_reg)
 	begin
 		case flow_fsm_reg is
 			when flow_idle =>			
@@ -237,6 +238,7 @@ process (clk, rst)
 				enable_MODdmux1 <= (others => '0');
 				enable_MODdmux2 <= (others => '0');
 				enable_MODdmux3 <= (others => '0');
+				
 				enaRLM <= '0';
 				enaRDM0 <= '0';
 				enaRDM1 <= '0';
@@ -246,10 +248,18 @@ process (clk, rst)
 				enaCRC1 <= '0';
 				enaCRC2 <= '0';
 				enaCRC3 <= '0';
-				enaDATA0 <= '0';
-				enaDATA1 <= '0';
-				enaDATA2 <= '0';
-				enaDATA3 <= '0';
+				
+				wrenDATA0 <= '0';
+				wrenDATA1 <= '0';
+				wrenDATA2 <= '0';
+				wrenDATA3 <= '0';
+				
+				addr_cnt_clr  <= '1';
+				
+				mod_passed0 <= '0';
+				mod_passed1 <= '0';
+				mod_passed2 <= '0';
+				mod_passed3 <= '0';
 				
 		case flow_fsm_reg is
 		when flow_idle => 
@@ -287,9 +297,13 @@ process (clk, rst)
 				enable_MODdmux0 <= "0";
 				enaCRC0 <= '1';
 		when flow_data0 => 
+				enable_MAINdmux <= "10";
+				enable_PACKdmux <= "00";
 				enable_MODdmux0 <= "1";
-				enaDATA0 <= '1';
+				wrenDATA0 <= '1';
+				addr_cnt_clr  <= '0';
 		when flow_crc1 => 
+				mod_passed0 <= '1';
 				enable_MAINdmux <= "10";
 				enable_PACKdmux <= "01";
 				enable_MODdmux1 <= "0";
@@ -298,8 +312,10 @@ process (clk, rst)
 				enable_MAINdmux <= "10";
 				enable_PACKdmux <= "01";
 				enable_MODdmux1 <= "1";	
-				enaDATA1 <= '1';
+				wrenDATA1 <= '1';
+				addr_cnt_clr  <= '0';
 		when flow_crc2 => 	
+				mod_passed1 <= '1';
 				enable_MAINdmux <= "10";
 				enable_PACKdmux <= "10";
 				enable_MODdmux2 <= "0";
@@ -308,8 +324,10 @@ process (clk, rst)
 				enable_MAINdmux <= "10";
 				enable_PACKdmux <= "10";
 				enable_MODdmux2 <= "1";	
-				enaDATA2 <= '1';
+				wrenDATA2 <= '1';
+				addr_cnt_clr  <= '0';
 		when flow_crc3 => 
+				mod_passed2 <= '1';
 				enable_MAINdmux <= "10";
 				enable_PACKdmux <= "11";
 				enable_MODdmux3 <= "0";
@@ -318,8 +336,10 @@ process (clk, rst)
 				enable_MAINdmux <= "10";
 				enable_PACKdmux <= "11";
 				enable_MODdmux3 <= "1";	
-				enaDATA3 <= '1';
+				wrenDATA3 <= '1';
+				addr_cnt_clr  <= '0';
 		when flow_eop =>
+				mod_passed3 <= '1';
 				--enable_MAINdmux <= "00";
 				
 				
@@ -337,9 +357,10 @@ end process;
 			ena_CRC1	<= enaCRC1; 
 			ena_CRC2	<= enaCRC2; 
 			ena_CRC3	<= enaCRC3; 
-			ena_DATA0   <= enaDATA0; 
-			ena_DATA1	<= enaDATA1; 
-			ena_DATA2	<= enaDATA2; 
-			ena_DATA3	<= enaDATA3; 
+			wen_DATA0   <= wrenDATA0; 
+			wen_DATA1	<= wrenDATA1; 
+			wen_DATA2	<= wrenDATA2; 
+			wen_DATA3	<= wrenDATA3; 
+	
 end data_flow;
 

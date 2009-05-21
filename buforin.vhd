@@ -24,13 +24,22 @@ entity buforin is
 		rst : in std_logic;
 		data  : in std_logic_vector ( 7 downto 0 );
 		sel : in std_logic_vector ( 1 downto 0 );  --<<----- >????????
-		flow_in : in std_logic;  
+		flow_in : in std_logic; 
+		
+		-- sygnaly z crccalc oczekuj¹ce na odczyt z RAM DATA 
+		ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : in std_logic;
+		-- mux wybierajacy sygnal do odczytu
+		muxDATA : in std_logic_vector ( 1 downto 0 ); 
+		
+		addr_calc_cnt_clr : in std_logic;
 		
 			--OUTPUTS
-		usb_endread : out std_logic;
+	--	usb_endread : out std_logic;
 	--	status2_index : out std_logic_vector ( 1 downto 0 );
+		transmit_end : out std_logic;
 		data_index : out std_logic_vector ( 7 downto 0 );
-		CRC_index : out std_logic_vector ( 15 downto 0 ); ----<----- powinno byæ 16 bit
+		CRC_index : out std_logic_vector ( 15 downto 0 );
+		
 		mod_passed0 : out std_logic;
 		mod_passed1 : out std_logic;
 		mod_passed2 : out std_logic;
@@ -59,7 +68,7 @@ component flowcontrol
 		clk 			: in std_logic;
 		rst				: in std_logic;
 		flow_in			: in std_logic;
-
+		
 		-----------
 		-- 00 - idle
 		-- 01 - enable
@@ -82,8 +91,8 @@ component flowcontrol
 		enable_MODdmux1 : out std_logic_vector ( 0 downto 0 );	
 		enable_MODdmux2 : out std_logic_vector ( 0 downto 0 );	
 		enable_MODdmux3 : out std_logic_vector ( 0 downto 0 );	
-		ena_RLM, ena_RDM0, ena_RDM1, ena_RDM2, ena_RDM3, ena_CRC0, ena_CRC1, ena_CRC2, ena_CRC3, ena_DATA0, ena_DATA1, ena_DATA2, ena_DATA3 : out std_logic;
-		
+		ena_RLM, ena_RDM0, ena_RDM1, ena_RDM2, ena_RDM3, ena_CRC0, ena_CRC1, ena_CRC2, ena_CRC3, wen_DATA0, wen_DATA1, wen_DATA2, wen_DATA3 : out std_logic;
+		addr_cnt_clr : out std_logic;
 		mod_passed0 : out std_logic;
 		mod_passed1 : out std_logic;
 		mod_passed2 : out std_logic;
@@ -180,20 +189,20 @@ component reg16		----rejestr CRC
 		d : in std_logic_vector ( 7 downto 0 );
 		
 		--OUTPUTS
-		q : out std_logic_vector ( 7 downto 0 )
+		q : out std_logic_vector ( 15 downto 0 )
 		
 		
 	);
 end component;
 
 
-signal enaRLM, enaRDM0, enaRDM1, enaRDM2, enaRDM3, enaCRC0, enaCRC1, enaCRC2, enaCRC3, enaDATA0, enaDATA1, enaDATA2, enaDATA3 : std_logic;
+signal enaRLM, enaRDM0, enaRDM1, enaRDM2, enaRDM3, enaCRC0, enaCRC1, enaCRC2, enaCRC3, wenDATA0, wenDATA1, wenDATA2, wenDATA3 : std_logic;
 signal enable_MAINdmux,	enable_RDMdmux, enable_PACKdmux : std_logic_vector ( 1 downto 0 );
 signal enable_HEADdmux, enable_MODdmux0, enable_MODdmux1, enable_MODdmux2, enable_MODdmux3 : std_logic_vector ( 0 downto 0 );
 -------------------------------------
 -- sygna³y DATA
 -------------------------------------
-signal sig01_main, sig00_main, sig10_main, sig11_main_empty : std_logic_vector (7 downto 0 );
+signal sig01_main, sig00_main, sig10_main : std_logic_vector (7 downto 0 );
 
 -------------------------------------
 --sygna³y HEAD 
@@ -213,30 +222,56 @@ signal sig2_rlm : std_logic_vector ( 7 downto 0 );  --<------------ OBS£U¯YÆ
 -- sygna³y RDM
 -------------------------------------
 signal sig1_a_rdm, sig1_b_rdm, sig1_c_rdm, sig1_d_rdm : std_logic_vector ( 7 downto 0 );
-signal sig2_a_rdm, sig2_b_rdm, sig2_c_rdm, sig2_d_rdm : std_logic_vector ( 7 downto 0 );
+signal sig2_a_rdm, sig2_b_rdm, sig2_c_rdm, sig2_d_rdm : std_logic_vector ( 15 downto 0 );
 
 -------------------------------------
 -- sygna³y DATA
 -------------------------------------
 signal sig1_a_data, sig1_b_data, sig1_c_data, sig1_d_data : std_logic_vector ( 7 downto 0 );		--sygna³y wejœcia do ramu
 signal sig2_a_data, sig2_b_data, sig2_c_data, sig2_d_data : std_logic_vector ( 7 downto 0 );		-- sygna³y wyjœcia z ramu
-signal wren_a, wren_b, wren_c, wren_d : std_logic;
-signal address_a, address_b, address_c, address_d : std_logic_vector ( 9 downto 0);
 
+----------------------------------
+-- kodowanie wrena
+----------------------------------
+signal wrenDATA0, wrenDATA1, wrenDATA2, wrenDATA3 : std_logic;
+signal wren_DATA0, wren_DATA1, wren_DATA2, wren_DATA3 : std_logic_vector ( 1 downto 0 );
 
+-------------------------------------
 -------------------------------------
 -- sygna³y CRC
 -------------------------------------
 signal sig1_a_crc, sig1_b_crc, sig1_c_crc, sig1_d_crc : std_logic_vector ( 7 downto 0 );
-signal sig2_a_crc, sig2_b_crc, sig2_c_crc, sig2_d_crc : std_logic_vector ( 7 downto 0 );
+signal sig2_a_crc, sig2_b_crc, sig2_c_crc, sig2_d_crc : std_logic_vector ( 15 downto 0 );
 
 
-signal junk : std_logic_vector ( 7 downto 0 ); --<-----------sygna³ wype³niany przez nieobs³u¿one jeszcze dane
+signal junk : std_logic_vector ( 15 downto 0 ); --<-----------sygna³ wype³niany przez nieobs³u¿one jeszcze dane
+
+-------------------------------------
+-- do obslugi licznika adresow
+-------------------------------------
+signal address  : std_logic_vector ( 9 downto 0);
+signal addr_cnt_next : std_logic_vector ( 9 downto 0 );
+signal addr_cnt_clr : std_logic; 
 
 ----------------------------------------------
 ------------------------------------------------- BEGIN
 ----------------------------------------------
 begin
+-- Opis dzialania licznika adresow
+	process (clk, rst)
+	begin
+		if rst = '0' then
+			address <= (others => '0');	
+		elsif rising_edge(clk) then
+			address <= addr_cnt_next;
+		end if;
+	end process;
+	
+	-- Sposob liczenia
+	addr_cnt_next <= 	(others => '0') 	when (addr_cnt_clr = '1') OR (addr_calc_cnt_clr = '1') else
+							address + 1;
+
+
 
 -------------------------------------
 --------UBER FLOW CONTROL
@@ -256,23 +291,24 @@ begin
 		enable_MODdmux1 => enable_MODdmux1,
 		enable_MODdmux2 => enable_MODdmux2,
 		enable_MODdmux3 => enable_MODdmux3, 
-			ena_RLM     => enaRLM,
-			ena_RDM0    => enaRDM0, 
-			ena_RDM1	=> enaRDM1, 
-			ena_RDM2	=> enaRDM2, 
-			ena_RDM3	=> enaRDM3, 
-			ena_CRC0	=> enaCRC0, 
-			ena_CRC1	=> enaCRC1, 
-			ena_CRC2	=> enaCRC2, 
-			ena_CRC3	=> enaCRC3, 
-			ena_DATA0   => enaDATA0, 
-			ena_DATA1	=> enaDATA1, 
-			ena_DATA2	=> enaDATA2, 
-			ena_DATA3	=> enaDATA3,
-			mod_passed0 => mod_passed0,
-			mod_passed1 => mod_passed1,
-			mod_passed2 => mod_passed2,
-			mod_passed3 => mod_passed3
+		ena_RLM     => enaRLM,
+		ena_RDM0    => enaRDM0, 
+		ena_RDM1	=> enaRDM1, 
+		ena_RDM2	=> enaRDM2, 
+		ena_RDM3	=> enaRDM3, 
+		ena_CRC0	=> enaCRC0, 
+		ena_CRC1	=> enaCRC1, 
+		ena_CRC2	=> enaCRC2, 
+		ena_CRC3	=> enaCRC3, 
+		wen_DATA0   => wenDATA0, 
+		wen_DATA1	=> wenDATA1, 
+		wen_DATA2	=> wenDATA2, 
+		wen_DATA3	=> wenDATA3,
+		addr_cnt_clr => addr_cnt_clr,
+		mod_passed0 => mod_passed0,
+		mod_passed1 => mod_passed1,
+		mod_passed2 => mod_passed2,
+		mod_passed3 => mod_passed3
 		);
 -------------------------------------
 --------MAIN DMUX--------------------
@@ -281,10 +317,10 @@ begin
 		port map ( 
 			input => data,
 			sel => enable_MAINdmux,
-			o1 => sig00_main,
-			o2 => sig01_main, --<------ DO OBSLUZENIA
+			o1 => sig00_main,  --<------ DO OBSLUZENIA
+			o2 => sig01_main,
 			o3 => sig10_main,
-			o4 => sig11_main_empty -- EMPTY
+			o4 => sig00_main -- EMPTY
 		);
 -------------------------------------
 --------HEADER DMUX------------------
@@ -351,7 +387,7 @@ dmux_pack : dmux4x8
 	mux_data : mux4x8 
 		port map (
 			output => data_index,			----- tu powinien byæ sygna³ id¹cy do crccalc
-			sel => sel,
+			sel => muxDATA,
 			i1 => sig2_a_data,
 			i2 => sig2_b_data,
 			i3 => sig2_c_data,
@@ -362,9 +398,9 @@ dmux_pack : dmux4x8
 -------- mux crc ---------------------
 --------------------------------------
 
-	mux_crc : mux4x8
+	mux_crc : mux4x16
 		port map (
-			output => junk,			----- tu powinien byæ sygna³ id¹cy do komparatora
+			output => CRC_index,			----- tu powinien byæ sygna³ id¹cy do komparatora
 			sel => sel,
 			i1 => sig2_a_crc,
 			i2 => sig2_b_crc,
@@ -385,7 +421,7 @@ dmux_pack : dmux4x8
 			o4 => sig1_d_rdm
 		);
 
-	mux2_rdm : mux4x8 
+	mux2_rdm : mux4x16 
 		port map (
 			output => junk,
 			sel => sel,					--------- obsluzyc
@@ -395,41 +431,67 @@ dmux_pack : dmux4x8
 			i4 => sig2_d_rdm
 		);
 
+
 -------------------------------------
 --------ram data ---------------
 -------------------------------------
+
+
+
+wren_DATA0 <= ren_DATA0 & wenDATA0;
+wren_DATA1 <= ren_DATA1 & wenDATA1;
+wren_DATA2 <= ren_DATA2 & wenDATA2;
+wren_DATA3 <= ren_DATA3 & wenDATA3;
+
+with wren_DATA0 select
+		wrenDATA0 <= '0' when "01",
+				  '1' when "10",
+				  '1' when others;
+with wren_DATA1 select
+		wrenDATA1 <= '0' when "01",
+				  '1' when "10",
+				  '1' when others;
+with wren_DATA2 select
+		wrenDATA2 <= '0' when "01",
+				  '1' when "10",
+				  '1' when others;
+with wren_DATA3 select
+		wrenDATA3 <= '0' when "01",
+				  '1' when "10",
+				  '1' when others;
+				  
 	ram_data0 : ram
 		PORT MAP (
-		wren => enaDATA0,		-- write / read enable	-- TODO trzeba z US daæ sygna³ zapisuj¹cy
+		wren => wrenDATA0,	
 		clock => clk,	
-		address => address_a, --- TODO daæ generator adresów alvo inne cudo
+		address =>  address, 
 		data => sig1_a_data,
 		q => sig2_a_data		-- wyjœcie
 	);
 	
 	ram_data1 : ram
 		PORT MAP (
-		wren => enaDATA1,		-- write / read enable	-- TODO trzeba z US daæ sygna³ zapisuj¹cy
+		wren => wrenDATA1,	
 		clock => clk,	
-		address => address_b, --- TODO daæ generator adresów alvo inne cudo
+		address => address, 
 		data => sig1_b_data,
 		q => sig2_b_data		-- wyjœcie
 	);
 		
 	ram_data2 : ram
 		PORT MAP (
-		wren => enaDATA2,		-- write / read enable	-- TODO trzeba z US daæ sygna³ zapisuj¹cy
+		wren => wrenDATA2,	
 		clock => clk,	
-		address => address_c, --- TODO daæ generator adresów alvo inne cudo
+		address => address, 
 		data => sig1_c_data,
 		q => sig2_c_data		-- wyjœcie
 	);
 		
 	ram_data3 : ram
 		PORT MAP (
-		wren => enaDATA3,		-- write / read enable	-- TODO trzeba z US daæ sygna³ zapisuj¹cy
+		wren => wrenDATA3,	
 		clock => clk,	
-		address => address_d, --- TODO daæ generator adresów alvo inne cudo
+		address => address, 
 		data => sig1_d_data,
 		q => sig2_d_data		-- wyjœcie
 	);
@@ -515,14 +577,21 @@ dmux_pack : dmux4x8
 			q => sig2_d_rdm
 		);
 -------------------------------------
--- rejestr RLM 8bit 
+-- rejestr RLM 8bit <--------------------------Zrezygnowaæ z tego, lub zmieniæ automat...
 -------------------------------------
 	rlm_0 : reg8
 				port map ( 
 			clk => clk,
 			rst => rst,
 			ena => enaRLM,
-			d => sig1_head,
+			d => sig0_head,
 			q => sig2_rlm
 		);
+		
+		
+		
+---------------------------------------------------------------------------------------------------<<<<<<<<<<<<<<<<<<<<<<<<
+---------------------------------------------------------------------------------------------------TRANSMIT END DO OBSLUZENIA W AUTOMACIE
+transmit_end <= '0';
+
 end data_flow;

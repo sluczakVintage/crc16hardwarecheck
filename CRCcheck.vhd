@@ -32,11 +32,11 @@ entity CRCcheck is
 		
 		-- Output ports
 			-- read signal to usb
-		usb_read	: out std_logic;
+	--	usb_read	: out std_logic;
 			-- end of reading signal to usb
-		usb_endread : out std_logic;
+	--	usb_endread : out std_logic;
 			-- write signal to usb
-		usb_write	: out std_logic;
+	--	usb_write	: out std_logic;
 			-- raport vector 
 		raport : out std_logic_vector ( 7 downto 0 )
 		
@@ -52,6 +52,9 @@ architecture structure of CRCcheck is
 	signal CRC_index : std_logic_vector ( 15 downto 0 );
 	signal CRC2_index : std_logic_vector ( 15 downto 0 );
 	
+	signal addr_cal_cnt_clr : std_logic;
+	signal ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : std_logic;
+	signal mux_DATA : std_logic_vector ( 1 downto 0 );
 	signal calc_done, bufout_ready, bufout_done, mod_passed0, mod_passed1, mod_passed2, mod_passed3 : std_logic;	
 	signal flow_in, calc_start, bufout_trans, bufout_send, transmit_end : std_logic; ---<<<<< TRANSMIT END
 	signal trans_mod : std_logic_vector ( 1 downto 0 );
@@ -97,10 +100,15 @@ component buforin
 		rst : in std_logic;
 		data  : in std_logic_vector ( 7 downto 0 );
 		flow_in : in std_logic;
+		ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : in std_logic;
+		muxDATA : in std_logic_vector ( 1 downto 0 );
+		addr_calc_cnt_clr : in std_logic;
+		sel : in std_logic_vector ( 1 downto 0 );  --<<----- >????????
 		
 			--OUTPUTS
-		usb_endread : out std_logic;
+	--	usb_endread : out std_logic;
 	--	status2_index : out std_logic_vector ( 1 downto 0 );
+		transmit_end : out std_logic;
 		data_index : out std_logic_vector ( 7 downto 0 );
 		CRC_index : out std_logic_vector ( 15 downto 0 );
 		mod_passed0 : out std_logic;
@@ -119,10 +127,14 @@ component crccalc
 		rst : in std_logic;
 		calc_start : in std_logic;
 		data_index : in std_logic_vector (7 downto 0 );
+		trans_mod : in  std_logic_vector ( 1 downto 0 );
 		transmit_end : in std_logic;-- DO ZMIANY
 		--OUTPUTS
 		calc_done	: out std_logic;
-		crc2_index : out std_logic_vector (15 downto 0 )
+		crc2_index : out std_logic_vector (15 downto 0 );
+		addr_calc_cnt_clr : out std_logic;
+		ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : out std_logic;
+		muxDATA : out std_logic_vector ( 1 downto 0 )
 		
 	);
 end component;
@@ -188,11 +200,18 @@ begin
 			rst => rst,
 			data => data,
 			flow_in	=> flow_in,
-			
-			usb_endread => usb_endread,
+			sel => "00",
+		--	usb_endread => usb_endread,
 			data_index => data_index,
 			CRC_index => CRC_index,
 		--	status2_index => status2_index,
+			transmit_end => transmit_end,
+			addr_calc_cnt_clr => addr_cal_cnt_clr,
+			ren_DATA0 => ren_DATA0, 
+			ren_DATA1 => ren_DATA1, 
+			ren_DATA2 => ren_DATA2, 
+			ren_DATA3 => ren_DATA3, 
+			muxDATA => mux_DATA,
 			
 			mod_passed0 => mod_passed0,
 			mod_passed1 => mod_passed1,
@@ -207,9 +226,16 @@ begin
 			data_index => data_index,
 			calc_start => calc_start,
 			transmit_end => transmit_end,
+			trans_mod => trans_mod,
 			
+			addr_calc_cnt_clr => addr_cal_cnt_clr,
 			calc_done => calc_done,
-			crc2_index => crc2_index
+			crc2_index => crc2_index,
+			ren_DATA0 => ren_DATA0, 
+			ren_DATA1 => ren_DATA1, 
+			ren_DATA2 => ren_DATA2 , 
+			ren_DATA3 => ren_DATA3, 
+			muxDATA => mux_DATA
 			
 		);
 	comparator_crc : comparator

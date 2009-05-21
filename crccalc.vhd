@@ -11,7 +11,7 @@
 --
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+use ieee.std_logic_unsigned.all;
 use work.PCK_CRC16_D8.all;	
 
 
@@ -26,10 +26,15 @@ entity crccalc is
 		rst : in std_logic;
 		calc_start : in std_logic;
 		data_index : in std_logic_vector (7 downto 0 );
+		trans_mod : in  std_logic_vector ( 1 downto 0 );
 		transmit_end : in std_logic;-- DO ZMIANY
 		--OUTPUTS
 		calc_done	: out std_logic;
-		crc2_index : out std_logic_vector (15 downto 0 )
+		crc2_index : out std_logic_vector (15 downto 0 );
+		addr_calc_cnt_clr : out std_logic;
+		ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : out std_logic;
+		muxDATA : out std_logic_vector ( 1 downto 0 )
+		
 		
 	);
 	
@@ -43,6 +48,9 @@ architecture behavior of crccalc is
 signal done_calc : std_logic;
 signal nextCRC, newCRC : std_logic_vector(15 downto 0) := "0000000000000000";
 
+signal addr_cnt_clr : std_logic;
+signal renDATA0, renDATA1, renDATA2, renDATA3 : std_logic;
+
 type CALC_FSM_STATE_TYPE is (
 	calc_fsb_idle,
 	calc_fsb_calculate,
@@ -50,7 +58,12 @@ type CALC_FSM_STATE_TYPE is (
 	);
 signal calc_fsb_reg, calc_fsb_next	: CALC_FSM_STATE_TYPE;
 
+
+
 begin
+
+
+
 -- Opis dzialania automatu kalkulatora
 	process (clk, rst)
 	begin
@@ -62,9 +75,16 @@ begin
 	end process;
 --	-- Funkcja przejsc-wyjsc
 	
-process (calc_fsb_reg, calc_start, transmit_end)
+process (calc_fsb_reg, calc_start, transmit_end, trans_mod)
 begin
-done_calc <= '0';
+	done_calc <= '0';
+	renDATA0 <= '0';
+	renDATA1 <= '0';
+	renDATA2 <= '0';
+	renDATA3 <= '0';
+	addr_cnt_clr  <= '1';
+	muxDATA <= (others => '0');
+	
 	case calc_fsb_reg is
 		when calc_fsb_idle =>  
 			if calc_start = '0' then
@@ -73,7 +93,30 @@ done_calc <= '0';
 				calc_fsb_next <= calc_fsb_calculate;
 			end if;
 		when calc_fsb_calculate =>
-			if transmit_end = '0' then
+					if trans_mod  = "00" then
+						calc_fsb_next <= calc_fsb_idle;
+						addr_cnt_clr  <= '0';
+						renDATA0 <= '1';
+						muxDATA <= "00";
+					elsif trans_mod  = "01" then
+						calc_fsb_next <= calc_fsb_idle;
+						addr_cnt_clr  <= '0';
+						renDATA1 <= '1';
+						muxDATA <= "01";
+					elsif trans_mod  = "10" then
+						calc_fsb_next <= calc_fsb_idle;
+						addr_cnt_clr  <= '0';
+						renDATA2 <= '1';
+						muxDATA <= "10";
+					elsif trans_mod  = "11" then
+						calc_fsb_next <= calc_fsb_idle;
+						addr_cnt_clr  <= '0';
+						renDATA3 <= '1';
+						muxDATA <= "11";
+					else 
+						calc_fsb_next <= calc_fsb_idle;
+					end if;	
+			if transmit_end = '0' then   -- <<<<<<<<<<<<<<<<<<<<<----------------------TODO WYKRYCIE ZNACZNIKA KOÑCA MODULU
 				calc_fsb_next <= calc_fsb_calculate;
 			else
 				calc_fsb_next <= calc_fsb_processed;
@@ -108,6 +151,9 @@ crc2_index <= newCRC;
 calc_done <= done_calc;
 crc2_index <= newCRC;
 
-
-
+addr_calc_cnt_clr <= addr_cnt_clr;
+ren_DATA0 <= renDATA0;
+ren_DATA1 <= renDATA1;
+ren_DATA2 <= renDATA2;
+ren_DATA3 <= renDATA3;
 end behavior;

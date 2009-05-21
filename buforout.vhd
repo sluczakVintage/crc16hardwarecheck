@@ -55,10 +55,9 @@ signal bufout_fsb_cur, bufout_fsb_next	: BUFOUT_FSM_STATE_TYPE; --- sygna³y auto
 
 signal ready_bufout, done_bufout : std_logic; 		--sygna³y do komunikacji miêdzy bufout a us
 
-
 signal enable1, enable2, enable3, enable4 : std_logic;
-signal sel_mux, sel_dmux, rap : std_logic_vector ( 1 downto 0 ); -------------<<<<
-
+signal sel_dmux : std_logic_vector ( 1 downto 0 ); 
+signal rap  : std_logic_vector ( 7 downto 0 );
 
 --- rejestry w buforout. przechowuj¹ce statusy crc, 
 --component mux2x2
@@ -80,14 +79,14 @@ component dmux4x2
 		
 	);
 end component;	
-
-component mux4x2
-	port(
-		i1, i2, i3, i4	: in std_logic_vector ( 1 downto 0 );
-		sel				: in std_logic_vector ( 1 downto 0 );
-		output 			: out std_logic_vector ( 1 downto 0 )
-	);
-end component;
+--
+--component mux4x2
+--	port(
+--		i1, i2, i3, i4	: in std_logic_vector ( 1 downto 0 );
+--		sel				: in std_logic_vector ( 1 downto 0 );
+--		output 			: out std_logic_vector ( 1 downto 0 )
+--	);
+--end component;
 
 component reg2
 	port
@@ -154,15 +153,15 @@ begin
 			o4 => sig1_d
 		);
 	
-	mux2 : mux4x2 
-		port map (
-			output => rap,   --------------------<<<<<
-			sel => sel_mux,
-			i1 => sig2_a,
-			i2 => sig2_b,
-			i3 => sig2_c,
-			i4 => sig2_d
-		);
+--	mux2 : mux4x2 
+--		port map (
+--			output => rap,   --------------------<<<<<
+--			sel => sel_mux,
+--			i1 => sig2_a,
+--			i2 => sig2_b,
+--			i3 => sig2_c,
+--			i4 => sig2_d
+--		);
 		
 		
 ----------AUTOMAT BUFOUT ---------------------
@@ -178,7 +177,7 @@ process (clk, rst)
 
 
 
-process(bufout_fsb_cur, bufout_trans, bufout_send, trans_mod)
+process(bufout_fsb_cur, bufout_trans, bufout_send, trans_mod, sig2_a, sig2_b, sig2_c, sig2_d)
 	begin
 		
 		sel_dmux <= "00";
@@ -186,6 +185,7 @@ process(bufout_fsb_cur, bufout_trans, bufout_send, trans_mod)
 		enable2 <= '0';
 		enable3 <= '0';
 		enable4 <= '0';
+		rap <= (others => '0');
 		done_bufout <= '0';
 		ready_bufout <= '0';	
 		
@@ -234,11 +234,12 @@ process(bufout_fsb_cur, bufout_trans, bufout_send, trans_mod)
 			
 			when bufout_sending =>
 				bufout_fsb_next <= bufout_idle;
+				rap <= (sig2_a & sig2_b & sig2_c & sig2_d);
 				ready_bufout <= '1';
 		end case;				
 			
 	end process;
 bufout_done <= done_bufout;	
 bufout_ready <= ready_bufout;
-	
+raport <= rap;	
 end data_flow;
