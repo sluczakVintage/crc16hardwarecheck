@@ -71,7 +71,6 @@ component us
 		data_incoming : in std_logic;
 		calc_done	: in std_logic;
 		equal_crc : in std_logic_vector ( 1 downto 0 );	
-		bufout_ready : in std_logic;
 		bufout_done : in std_logic;
 		mod_passed0 : in std_logic;
 		mod_passed1 : in std_logic;
@@ -108,7 +107,6 @@ component buforin
 			--OUTPUTS
 	--	usb_endread : out std_logic;
 	--	status2_index : out std_logic_vector ( 1 downto 0 );
-		transmit_end : out std_logic;
 		data_index : out std_logic_vector ( 7 downto 0 );
 		CRC_index : out std_logic_vector ( 15 downto 0 );
 		mod_passed0 : out std_logic;
@@ -128,7 +126,6 @@ component crccalc
 		calc_start : in std_logic;
 		data_index : in std_logic_vector (7 downto 0 );
 		trans_mod : in  std_logic_vector ( 1 downto 0 );
-		transmit_end : in std_logic;-- DO ZMIANY
 		--OUTPUTS
 		calc_done	: out std_logic;
 		crc2_index : out std_logic_vector (15 downto 0 );
@@ -159,12 +156,10 @@ component buforout
 		
 		bufout_send : in std_logic;
 		bufout_trans : in std_logic;
-		trans_mod : in  std_logic_vector ( 1 downto 0 );
 		status_index : in std_logic_vector ( 1 downto 0 );
 	--	status2_index : in std_logic_vector ( 1 downto 0 );
 			--OUTPUTS
-		raport : out std_logic_vector (7 downto 0 ); --<<<<<<zmieniæ na 8bit!!
-		bufout_ready : out std_logic;
+		raport : out std_logic_vector (7 downto 0 ); 
 		bufout_done : out std_logic
 	);
 end component;
@@ -179,7 +174,6 @@ begin
 			data_incoming => usb_rxf,
 			calc_done => calc_done,
 			equal_crc => equal_crc,
-			bufout_ready => bufout_ready,
 			bufout_done => bufout_done,
 			mod_passed0 => mod_passed0,
 			mod_passed1 => mod_passed1,
@@ -205,7 +199,6 @@ begin
 			data_index => data_index,
 			CRC_index => CRC_index,
 		--	status2_index => status2_index,
-			transmit_end => transmit_end,
 			addr_calc_cnt_clr => addr_cal_cnt_clr,
 			ren_DATA0 => ren_DATA0, 
 			ren_DATA1 => ren_DATA1, 
@@ -225,7 +218,6 @@ begin
 			rst => rst,
 			data_index => data_index,
 			calc_start => calc_start,
-			transmit_end => transmit_end,
 			trans_mod => trans_mod,
 			
 			addr_calc_cnt_clr => addr_cal_cnt_clr,
@@ -254,10 +246,8 @@ begin
 		rst => rst,
 		bufout_send => bufout_send,
 		bufout_trans => bufout_trans,
-		trans_mod => trans_mod, 
 			
 		bufout_done => bufout_done, 
-		bufout_ready => bufout_ready,
 		status_index => status_index,
 	--	status2_index => status2_index,  ----<<<<<<<<<<<<<<<<
 		raport => raport

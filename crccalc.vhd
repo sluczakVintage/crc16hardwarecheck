@@ -7,8 +7,14 @@
 -- Author	:	Maciej Nowak 
 -- Based on	:	/
 --------------------------------
----------------------------
---
+-----------------------------
+--- Znaczniki 
+---SOP 00000010
+---EOH 00000110
+---EOM 00000011
+---EOP 00000100
+-----------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
@@ -27,7 +33,6 @@ entity crccalc is
 		calc_start : in std_logic;
 		data_index : in std_logic_vector (7 downto 0 );
 		trans_mod : in  std_logic_vector ( 1 downto 0 );
-		transmit_end : in std_logic;-- DO ZMIANY
 		--OUTPUTS
 		calc_done	: out std_logic;
 		crc2_index : out std_logic_vector (15 downto 0 );
@@ -53,6 +58,7 @@ signal renDATA0, renDATA1, renDATA2, renDATA3 : std_logic;
 
 type CALC_FSM_STATE_TYPE is (
 	calc_fsb_idle,
+--	calc_fsb_clear,
 	calc_fsb_calculate,
 	calc_fsb_processed
 	);
@@ -75,7 +81,7 @@ begin
 	end process;
 --	-- Funkcja przejsc-wyjsc
 	
-process (calc_fsb_reg, calc_start, transmit_end, trans_mod)
+process (calc_fsb_reg, calc_start, data_index, trans_mod)
 begin
 	done_calc <= '0';
 	renDATA0 <= '0';
@@ -91,7 +97,11 @@ begin
 				calc_fsb_next <= calc_fsb_idle;
 			else
 				calc_fsb_next <= calc_fsb_calculate;
+--				calc_fsb_next <= calc_fsb_clear;
 			end if;
+--		when calc_fsb_clear =>
+--				
+--				calc_fsb_next <= calc_fsb_calculate;
 		when calc_fsb_calculate =>
 					if trans_mod  = "00" then
 						calc_fsb_next <= calc_fsb_idle;
@@ -116,10 +126,10 @@ begin
 					else 
 						calc_fsb_next <= calc_fsb_idle;
 					end if;	
-			if transmit_end = '0' then   -- <<<<<<<<<<<<<<<<<<<<<----------------------TODO WYKRYCIE ZNACZNIKA KOÑCA MODULU
-				calc_fsb_next <= calc_fsb_calculate;
-			else
+			if data_index = "00000011" then   
 				calc_fsb_next <= calc_fsb_processed;
+			else
+				calc_fsb_next <= calc_fsb_calculate;
 			end if;
 		when calc_fsb_processed =>
 			done_calc <= '1';
@@ -129,7 +139,7 @@ end process;
 
 process (clk, rst)
 	begin
-		if rst = '1' then
+		if (rst = '1') then
 			newCRC <= (others => '0');
 		elsif rising_edge(clk) then
 			newCRC <= nextCRC;
@@ -140,13 +150,15 @@ process (calc_fsb_reg, data_index, newCRC)
 begin
 	nextCRC <= (others => '0');
 	if calc_fsb_reg = calc_fsb_calculate then
-		  nextCRC <= nextCRC16_D8 (data_index, newCRC);
-	else nextCRC <= (others => '0');
+		nextCRC <= nextCRC16_D8 (data_index, newCRC);
+	else 
+		nextCRC <= ( others => '0' );
+	
 	end if;
 		
 end process;
 
-crc2_index <= newCRC;
+
 
 calc_done <= done_calc;
 crc2_index <= newCRC;

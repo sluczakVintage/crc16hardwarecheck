@@ -1,12 +1,21 @@
 --------------------------------
--- File		:	flowcontrol2.vhd
--- Version	:	0.1
+-- File		:	flowcontrol.vhd
+-- Version	:	0.4
 -- Date		:	03.05.2009
 -- Desc		:	Bit flow controler
 -- Author	:	Sebastian £uczak
 -- Author	:	Maciej Nowak 
 -- Based on	:	/
 --------------------------------
+
+
+-----------------------------
+--- Znaczniki 
+---SOP 00000010
+---EOH 00000110
+---EOM 00000011
+---EOP 00000100
+-----------------------------
 
 
 library ieee;
@@ -24,15 +33,10 @@ entity flowcontrol is
 		clk 			: in std_logic;
 		rst				: in std_logic;
 		flow_in			: in std_logic;
-		-----------
-		-- 00 - idle
-		-- 01 - enable
-		-- 11 - end transmission
-		-----------
+		data			: in std_logic_vector ( 7 downto 0 );
 		
 		
 		--OUTPUTS
---		flow_out			: out std_logic;
 			-- enable g³ównego demultipleksera
 		enable_MAINdmux : out std_logic_vector ( 1 downto 0 );
 			-- enable demultimpleksera nag³ówka na liczbê modu³ów i d³ugoœæ modu³ów
@@ -80,6 +84,8 @@ type FLOW_FSM_STATE_TYPE is (
 	
 signal flow_fsm_reg, flow_fsm_next	:FLOW_FSM_STATE_TYPE;
 
+signal flow_reset : std_logic;
+
 signal enaRLM, enaRDM0, enaRDM1, enaRDM2, enaRDM3, enaCRC0, enaCRC1, enaCRC2, enaCRC3, wrenDATA0, wrenDATA1, wrenDATA2, wrenDATA3 : std_logic;
 
 -- Licznik jako rejestr - sygna³y
@@ -90,16 +96,16 @@ begin
 -- Licznik jako rejestr 13bit
 	process (clk, rst)
 	begin
-		if rst = '1' then
+		if rst = '1'  then
 			cnt_reg <= (others => '0');	
 		elsif rising_edge(clk) then
 			cnt_reg <= cnt_next;
 		end if;
 	end process;
 
-	process (cnt_reg, flow_in)
+	process (cnt_reg, flow_in, flow_reset)
 	begin
-		if flow_in = '0' then
+		if (flow_in = '0') OR (flow_reset = '1') then
 			cnt_next <= (others => '0');
 		else
 			cnt_next <= cnt_reg + "1";
@@ -119,17 +125,24 @@ process (clk, rst)
 end process;
 
 	-- Funkcja przejsc-wyjsc
-process(flow_fsm_reg, flow_in, cnt_reg)
+process(flow_fsm_reg, flow_in, cnt_reg, data)
 	begin
+		flow_reset <= '0';
+		
 		case flow_fsm_reg is
 			when flow_idle =>			
 				if flow_in = '0' then 		
 					flow_fsm_next <= flow_idle;				
 				else 
-					flow_fsm_next <= flow_sop;
+						if data = "00000010" then
+							flow_fsm_next <= flow_sop;
+						else
+							flow_reset <= '1';
+							flow_fsm_next <= flow_idle;
+						end if;
 				end if; 	
 			when flow_sop => 
-				if cnt_reg = 1 then -- 8bit
+				if cnt_reg = 1 then -- 8bit						
 					flow_fsm_next <= flow_header_rlm;
 				else 
 					flow_fsm_next <= flow_sop;	
@@ -160,13 +173,18 @@ process(flow_fsm_reg, flow_in, cnt_reg)
 				end if;
 			when flow_header_rdm3 =>
 				if cnt_reg = 10 then --80bit
-					flow_fsm_next <= flow_eoh;
+					if data = "00000110" then
+						flow_fsm_next <= flow_eoh;
+					else
+							flow_reset <= '1';
+							flow_fsm_next <= flow_idle;
+					end if;
 				else 
 					flow_fsm_next <= flow_header_rdm3;
 				end if; 	
 			when flow_eoh =>
 				if cnt_reg = 11 then --88bit
-					flow_fsm_next <= flow_crc0;
+					flow_fsm_next <= flow_crc0;	
 				else 
 					flow_fsm_next <= flow_eoh;
 				end if; 	
@@ -219,11 +237,11 @@ process(flow_fsm_reg, flow_in, cnt_reg)
 					flow_fsm_next <= flow_data3;
 				end if; 	
 			when flow_eop =>
-				if cnt_reg = 4117 then --32936bit
+				if cnt_reg = 4117 then --32936bit 
 					flow_fsm_next <= flow_idle;
 				else 
 					flow_fsm_next <= flow_eop;
-				end if; 		
+				end if; 
 		end case;
 	end process;
 
@@ -265,7 +283,7 @@ process(flow_fsm_reg, flow_in, cnt_reg)
 		when flow_idle => 
 				
 		when flow_sop => 
-			--	enable_MAINdmux <= "00";
+
 		when flow_header_rlm => 
 				enable_MAINdmux <= "01";
 				enaRLM <= '1';
@@ -290,7 +308,7 @@ process(flow_fsm_reg, flow_in, cnt_reg)
 				enable_RDMdmux <= "11";
 				enaRDM3 <= '1';
 		when flow_eoh => 
-			--	enable_MAINdmux <= "00";
+		
 		when flow_crc0 => 
 				enable_MAINdmux <= "10";
 				enable_PACKdmux <= "00";
@@ -340,7 +358,7 @@ process(flow_fsm_reg, flow_in, cnt_reg)
 				addr_cnt_clr  <= '0';
 		when flow_eop =>
 				mod_passed3 <= '1';
-				--enable_MAINdmux <= "00";
+				
 				
 				
 	end case;

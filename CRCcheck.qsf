@@ -38,7 +38,7 @@
 
 set_global_assignment -name FAMILY Stratix
 set_global_assignment -name DEVICE AUTO
-set_global_assignment -name TOP_LEVEL_ENTITY buforin
+set_global_assignment -name TOP_LEVEL_ENTITY CRCcheck
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 9.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "23:33:23  MAY 03, 2009"
 set_global_assignment -name LAST_QUARTUS_VERSION 9.0
@@ -69,7 +69,15 @@ set_global_assignment -name VECTOR_WAVEFORM_FILE ../crc16hardwarecheck/compare.v
 set_global_assignment -name END_TIME "100 us"
 set_global_assignment -name OPTIMIZE_POWER_DURING_SYNTHESIS "NORMAL COMPILATION"
 set_global_assignment -name VECTOR_WAVEFORM_FILE reg16.vwf
-set_global_assignment -name INCREMENTAL_VECTOR_INPUT_SOURCE reg16.vwf
+set_global_assignment -name SYNTH_MESSAGE_LEVEL HIGH
+set_global_assignment -name VECTOR_WAVEFORM_FILE reg2to8.vwf
+set_global_assignment -name SOURCE_FILE CRCcheck_reg2to8.sim
+set_global_assignment -name SOURCE_FILE reg2to8.sim
+set_global_assignment -name MISC_FILE "F:/workspaces/Quartus/crc16hardwareV2/CRCcheck.dpf"
+set_global_assignment -name SOURCE_FILE flowcontrol.sim
+set_global_assignment -name VECTOR_WAVEFORM_FILE crccalc.vwf
+set_global_assignment -name SOURCE_FILE crccalc.sim
+set_global_assignment -name INCREMENTAL_VECTOR_INPUT_SOURCE reg2to8.vwf
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_global_assignment -name LL_ROOT_REGION ON -section_id "Root Region"

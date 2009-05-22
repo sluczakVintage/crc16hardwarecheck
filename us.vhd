@@ -24,7 +24,6 @@ entity us is
 		data_incoming : in std_logic;
 		calc_done	: in std_logic;
 		equal_crc : in std_logic_vector ( 1 downto 0 );	
-		bufout_ready : in std_logic;
 		bufout_done : in std_logic;
 		mod_passed0 : in std_logic;
 		mod_passed1 : in std_logic;
@@ -66,7 +65,6 @@ type PROC_FSM_STATE_TYPE is (
 	proc_fsb_idle,
 	proc_fsb_calc,
 	proc_fsb_comp,
-	proc_fsb_queue3,
 	proc_fsb_transmit
 	);
 signal proc_fsb_reg, proc_fsb_next	: PROC_FSM_STATE_TYPE;	
@@ -94,7 +92,7 @@ begin
 	end process;
 	-- Funkcja przejsc-wyjsc
 	
-process (main_fsb_reg, mod_processed, data_incoming, mod_passed0, mod_passed1, mod_passed2, mod_passed3, bufout_ready)
+process (main_fsb_reg, mod_processed, data_incoming, mod_passed0, mod_passed1, mod_passed2, mod_passed3)
 begin
 	start_processing <= '0';
 	flow <= '0';
@@ -178,12 +176,8 @@ begin
 				main_fsb_next <= main_fsb_send;
 			end if;
 		when main_fsb_send => -- jesli buforout gotowy, rozpocznij wysylanie
-			if bufout_ready = '0' then
-				main_fsb_next <= main_fsb_send;
-			else
 				main_fsb_next <= main_fsb_idle;
 				send_bufout <= '1'; -- zacznij przesylanie
-			end if;
 	end case;
 end process;
 
@@ -198,7 +192,7 @@ end process;
 	end process;
 --	-- Funkcja przejsc-wyjsc
 	
-process (proc_fsb_reg, start_processing, calc_done, bufout_ready, bufout_done, equal_crc)
+process (proc_fsb_reg, start_processing, calc_done, bufout_done, equal_crc)
 begin
 start_calc <= '0';
 start_trans <= '0';
@@ -221,18 +215,11 @@ index_status <= "00";
 		when proc_fsb_comp =>
 				-- przekierowac multipleksery i aktywowac REJESTRY (jesli trzeba) TODO
 				index_status <= equal_crc;
-				proc_fsb_next <= proc_fsb_queue3;
-			
-		when proc_fsb_queue3 =>  -- ta kolejka jest POTRZEBNA (bo buforout moze jeszcze wysylac jednoczesnie)
-			if bufout_ready = '0' then
-				proc_fsb_next <= proc_fsb_queue3;
-			else
 				proc_fsb_next <= proc_fsb_transmit;
-				start_trans <= '1';
-			end if;
 		when proc_fsb_transmit =>
 			if bufout_done = '0' then
 				proc_fsb_next <= proc_fsb_transmit;
+				start_trans <= '1';
 			else
 				proc_fsb_next <= proc_fsb_idle;
 				mod_processed <= '1';

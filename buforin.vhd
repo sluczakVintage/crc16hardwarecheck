@@ -8,8 +8,14 @@
 -- Based on	:	/
 --------------------------------
 
----------------------------
---
+-----------------------------
+--- Znaczniki 
+---SOP 00000010
+---EOH 00000110
+---EOM 00000011
+---EOP 00000100
+-----------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
@@ -68,16 +74,10 @@ component flowcontrol
 		clk 			: in std_logic;
 		rst				: in std_logic;
 		flow_in			: in std_logic;
-		
-		-----------
-		-- 00 - idle
-		-- 01 - enable
-		-- 11 - end transmission
-		-----------
-		
+		data			: in std_logic_vector ( 7 downto 0 );		
 		
 		--OUTPUTS
---		flow_out			: out std_logic;
+
 			-- enable g³ównego demultipleksera
 		enable_MAINdmux : out std_logic_vector ( 1 downto 0 );
 			-- enable demultimpleksera nag³ówka na liczbê modu³ów i d³ugoœæ modu³ów
@@ -280,9 +280,9 @@ begin
 		port map ( 
 		clk => clk,		
 		rst	=> rst,		
-		flow_in	=> flow_in,		
+		flow_in	=> flow_in,	
+		data => data, 	
 	
-	--	flow_out => flow_out,	
 		enable_MAINdmux => enable_MAINdmux, 
 		enable_HEADdmux => enable_HEADdmux, 	
 		enable_RDMdmux => enable_RDMdmux,

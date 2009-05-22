@@ -57,7 +57,7 @@ end data_flow;
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+use ieee.std_logic_unsigned.all;
 
 --Rejestr 2bit
 entity reg2 is
@@ -102,8 +102,79 @@ end data_flow;
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+use ieee.std_logic_unsigned.all;
 
+
+--rejestr reg2bit_to_8bit right to left 
+entity regs is 
+	port
+	(
+	
+		--INPUTS
+		--@@ TODO dodaæ stygna³y z US
+		clk : in std_logic;
+		rst : in std_logic;
+		ena : in std_logic;
+		clr : in std_logic;
+		d : in std_logic_vector ( 1 downto 0 );
+		
+
+		--OUTPUTS
+		q : out std_logic_vector ( 7 downto 0 )
+		
+	);
+end regs;
+
+
+architecture data_flow of regs is
+
+	signal q_2reg, q_2next : std_logic_vector ( 1 downto 0 );
+	signal q_4reg, q_4next : std_logic_vector ( 1 downto 0 );
+	signal q_6reg, q_6next : std_logic_vector ( 1 downto 0 );
+	signal q_8reg, q_8next : std_logic_vector ( 1 downto 0 );
+	signal q_final : std_logic_vector ( 7 downto 0 );
+
+begin
+	
+	process(clk, rst, ena, clr)
+	begin
+		if(rst = '1') OR (clr = '1') then
+			q_2reg <= (others => '0');
+			q_4reg <= (others => '0');
+			q_6reg <= (others => '0');
+			q_8reg <= (others => '0');
+			q_final <= (others => '0');
+		
+		elsif rising_edge(clk) then
+		--	if ena = '1' then
+			q_2reg <= q_2next;
+			q_4reg <= q_4next; 
+			q_6reg <= q_6next; 
+			q_8reg <= q_8next; 
+			q_final <= (q_8reg & q_6reg & q_4reg & q_2reg); 
+		--	else
+			--	q_4reg <= q_4reg;
+			--	q_6reg <= q_6reg;
+			--	q_8reg <= q_8reg;
+		--	end if;
+		end if;
+	end process;
+	
+	q_2next <= d when ena = '1' else
+			q_2reg;
+	q_4next <= q_2reg when ena = '1' else
+			q_4reg;
+	q_6next <= q_4reg when ena = '1' else
+			q_6reg;
+	q_8next <= q_6reg when ena = '1' else
+			q_8reg;
+	
+	q <= q_final;
+end data_flow;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
 
 --rejestr 16bit
 entity reg16 is 
@@ -139,7 +210,11 @@ begin
 			q_16bit_reg <= (others => '0');
 		elsif rising_edge(clk) then
 			q_reg <= q_next;
-			q_16bit_reg <= (q_reg & q_next);
+			if ena = '1' then
+				q_16bit_reg <= (q_reg & q_next);
+			else 
+				q_16bit_reg <= q_16bit_reg;
+			end if;
 		end if;
 	end process;
 	
@@ -153,7 +228,7 @@ end data_flow;
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+use ieee.std_logic_unsigned.all;
 
 -- Rejestr 8192bit
 entity reg8K is
