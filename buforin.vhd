@@ -24,25 +24,25 @@ use work.PCK_CRC16_D8.all;
 entity buforin is
 	port
 	(
-			-- INPUTS
+-- INPUTS
 			--@@ TODO: nale¿y dodaæ sygna³y z uk³adu steruj¹cego
 		clk : in  std_logic ;
 		rst : in std_logic;
 		data  : in std_logic_vector ( 7 downto 0 );
-		sel : in std_logic_vector ( 1 downto 0 );  --<<----- >????????
+		trans_mod : in  std_logic_vector ( 1 downto 0 );
+		sel : in std_logic_vector (1 downto 0 );
 		flow_in : in std_logic; 
 		
 		-- sygnaly z crccalc oczekuj¹ce na odczyt z RAM DATA 
 		ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : in std_logic;
 		-- mux wybierajacy sygnal do odczytu
 		muxDATA : in std_logic_vector ( 1 downto 0 ); 
-		
+		--zewnetrzny clr licznika adresow
 		addr_calc_cnt_clr : in std_logic;
 		
-			--OUTPUTS
-	--	usb_endread : out std_logic;
+--OUTPUTS
+
 	--	status2_index : out std_logic_vector ( 1 downto 0 );
-		transmit_end : out std_logic;
 		data_index : out std_logic_vector ( 7 downto 0 );
 		CRC_index : out std_logic_vector ( 15 downto 0 );
 		
@@ -51,7 +51,7 @@ entity buforin is
 		mod_passed2 : out std_logic;
 		mod_passed3 : out std_logic	
 		
-	--	flow_out : out std_logic  --<<----- >????????
+	
 	);
 end buforin;
 
@@ -69,8 +69,6 @@ component flowcontrol
 	port
 	(
 		-- INPUTS
-			--@@ TODO: nale¿y dodaæ sygna³y z uk³adu steruj¹cego
-			
 		clk 			: in std_logic;
 		rst				: in std_logic;
 		flow_in			: in std_logic;
@@ -79,7 +77,7 @@ component flowcontrol
 		--OUTPUTS
 
 			-- enable g³ównego demultipleksera
-		enable_MAINdmux : out std_logic_vector ( 1 downto 0 );
+		enable_MAINdmux : out std_logic_vector ( 0 downto 0 );
 			-- enable demultimpleksera nag³ówka na liczbê modu³ów i d³ugoœæ modu³ów
 		enable_HEADdmux :  out std_logic_vector ( 0 downto 0 );
 			-- enable demultipleksera d³ugoœci modu³ów
@@ -164,13 +162,10 @@ component reg8
 	port
 	(
 		--INPUTS
-		--@@ TODO dodaæ stygna³y z US
 		clk : in std_logic;
 		rst : in std_logic;
 		ena : in std_logic;
 		d : in std_logic_vector ( 7 downto 0 );
-		
-
 		--OUTPUTS
 		q : out std_logic_vector ( 7 downto 0 )
 		
@@ -178,16 +173,14 @@ component reg8
 	);
 end component;
 
-component reg16		----rejestr CRC
+component reg8it_to16bit	----rejestr CRC
 	port
 	(
 		--INPUTS
-		--@@ TODO dodaæ stygna³y z US
 		clk : in std_logic;
 		rst : in std_logic;
 		ena : in std_logic;
 		d : in std_logic_vector ( 7 downto 0 );
-		
 		--OUTPUTS
 		q : out std_logic_vector ( 15 downto 0 )
 		
@@ -196,13 +189,14 @@ component reg16		----rejestr CRC
 end component;
 
 
-signal enaRLM, enaRDM0, enaRDM1, enaRDM2, enaRDM3, enaCRC0, enaCRC1, enaCRC2, enaCRC3, wenDATA0, wenDATA1, wenDATA2, wenDATA3 : std_logic;
-signal enable_MAINdmux,	enable_RDMdmux, enable_PACKdmux : std_logic_vector ( 1 downto 0 );
-signal enable_HEADdmux, enable_MODdmux0, enable_MODdmux1, enable_MODdmux2, enable_MODdmux3 : std_logic_vector ( 0 downto 0 );
+signal enaRLM, enaRDM0, enaRDM1, enaRDM2, enaRDM3, enCRC0, enCRC1, enCRC2, enCRC3, wenDATA0, wenDATA1, wenDATA2, wenDATA3 : std_logic;
+signal enaCRC0, enaCRC1, enaCRC2, enaCRC3 : std_logic;
+signal enable_RDMdmux, enable_PACKdmux : std_logic_vector ( 1 downto 0 );
+signal enable_MAINdmux, enable_HEADdmux, enable_MODdmux0, enable_MODdmux1, enable_MODdmux2, enable_MODdmux3 : std_logic_vector ( 0 downto 0 );
 -------------------------------------
 -- sygna³y DATA
 -------------------------------------
-signal sig01_main, sig00_main, sig10_main : std_logic_vector (7 downto 0 );
+signal sig0_main, sig1_main : std_logic_vector (7 downto 0 );
 
 -------------------------------------
 --sygna³y HEAD 
@@ -296,10 +290,10 @@ begin
 		ena_RDM1	=> enaRDM1, 
 		ena_RDM2	=> enaRDM2, 
 		ena_RDM3	=> enaRDM3, 
-		ena_CRC0	=> enaCRC0, 
-		ena_CRC1	=> enaCRC1, 
-		ena_CRC2	=> enaCRC2, 
-		ena_CRC3	=> enaCRC3, 
+		ena_CRC0	=> enCRC0, 
+		ena_CRC1	=> enCRC1, 
+		ena_CRC2	=> enCRC2, 
+		ena_CRC3	=> enCRC3, 
 		wen_DATA0   => wenDATA0, 
 		wen_DATA1	=> wenDATA1, 
 		wen_DATA2	=> wenDATA2, 
@@ -313,21 +307,19 @@ begin
 -------------------------------------
 --------MAIN DMUX--------------------
 -------------------------------------
-	dmux_main : dmux4x8
+	dmux_main : dmux2x8
 		port map ( 
 			input => data,
 			sel => enable_MAINdmux,
-			o1 => sig00_main,  --<------ DO OBSLUZENIA
-			o2 => sig01_main,
-			o3 => sig10_main,
-			o4 => sig00_main -- EMPTY
+			o1 => sig0_main, 
+			o2 => sig1_main
 		);
 -------------------------------------
 --------HEADER DMUX------------------
 -------------------------------------
 dmux_head : dmux2x8
 		port map ( 
-			input => sig01_main,
+			input => sig0_main,
 			sel => enable_HEADdmux,
 			o1 => sig0_head,
 			o2 => sig1_head			
@@ -337,7 +329,7 @@ dmux_head : dmux2x8
 -------------------------------------
 dmux_pack : dmux4x8
 		port map ( 
-			input => sig10_main,
+			input => sig1_main,
 			sel => enable_PACKdmux,
 			o1 => sig00_pack,
 			o2 => sig01_pack,
@@ -381,6 +373,84 @@ dmux_pack : dmux4x8
 			o1 => sig1_d_crc,
 			o2 => sig1_d_data			
 		);		
+
+--------------------------------------
+-------- mux crc ---------------------
+--------------------------------------
+
+--------------------------------
+-------- enable do rejestrow crc
+--------------------------------
+process (trans_mod, enCRC0, enCRC1, enCRC2, enCRC3)
+begin
+enaCRC0 <= enCRC0;
+enaCRC1 <= enCRC1;
+enaCRC2 <= enCRC2;
+enaCRC3 <= enCRC3;
+	case trans_mod is
+		when "00" =>
+			enaCRC0 <= '1';
+		when "01" =>
+			enaCRC1 <= '1';
+		when "10" =>
+			enaCRC2 <= '1';
+		when "11" =>
+			enaCRC3 <= '1';
+	end case;
+end process;
+-----------------------------
+--------rejestry crc 16bit --
+-----------------------------
+
+	crc_0 : reg8it_to16bit
+		port map ( 
+			clk => clk,
+			rst => rst,
+			ena => enaCRC0,
+			d => sig1_a_crc,
+			q => sig2_a_crc
+		);
+
+	crc_1 : reg8it_to16bit
+		port map (
+			clk => clk,
+			rst => rst,
+			ena => enaCRC1,
+			d => sig1_b_crc,
+			q => sig2_b_crc
+		);
+
+	crc_2 : reg8it_to16bit
+		port map (
+			clk => clk,
+			rst => rst,
+			ena => enaCRC2,
+			d => sig1_c_crc,
+			q => sig2_c_crc
+		);
+
+	crc_3 : reg8it_to16bit
+		port map (
+			clk => clk,
+			rst => rst,
+			ena => enaCRC3,
+			d => sig1_d_crc,
+			q => sig2_d_crc
+		);
+
+-----------------------------
+--------mux crc 16bit -------
+-----------------------------
+
+	mux_crc : mux4x16
+		port map (
+			output => CRC_index,			----- tu powinien byæ sygna³ id¹cy do komparatora
+			sel => trans_mod,
+			i1 => sig2_a_crc,
+			i2 => sig2_b_crc,
+			i3 => sig2_c_crc,
+			i4 => sig2_d_crc
+		);
 --------------------------------------
 --------- mux data -------------------
 --------------------------------------
@@ -394,46 +464,9 @@ dmux_pack : dmux4x8
 			i4 => sig2_d_data
 		);
 		
---------------------------------------
--------- mux crc ---------------------
---------------------------------------
-
-	mux_crc : mux4x16
-		port map (
-			output => CRC_index,			----- tu powinien byæ sygna³ id¹cy do komparatora
-			sel => sel,
-			i1 => sig2_a_crc,
-			i2 => sig2_b_crc,
-			i3 => sig2_c_crc,
-			i4 => sig2_d_crc
-		);
-
---------------------------------------
--------- mux i dmux rdm --------------
---------------------------------------
-	dmux1_rdm : dmux4x8
-		port map (
-			input => sig1_head,
-			sel => enable_RDMdmux,
-			o1 => sig1_a_rdm,
-			o2 => sig1_b_rdm,
-			o3 => sig1_c_rdm,
-			o4 => sig1_d_rdm
-		);
-
-	mux2_rdm : mux4x16 
-		port map (
-			output => junk,
-			sel => sel,					--------- obsluzyc
-			i1 => sig2_a_rdm,
-			i2 => sig2_b_rdm,
-			i3 => sig2_c_rdm,
-			i4 => sig2_d_rdm
-		);
-
 
 -------------------------------------
---------ram data ---------------
+--------ram data --------------------
 -------------------------------------
 
 
@@ -497,51 +530,34 @@ with wren_DATA3 select
 	);
 				
 
--------------------------------------
---------rejesrty crc docelowo 16bit -
--------------------------------------
-
-	crc_0 : reg16
-		port map ( 
-			clk => clk,
-			rst => rst,
-			ena => enaCRC0,
-			d => sig1_a_crc,
-			q => sig2_a_crc
+--------------------------------------
+-------- mux i dmux rdm --------------
+--------------------------------------
+	dmux1_rdm : dmux4x8
+		port map (
+			input => sig1_head,
+			sel => enable_RDMdmux,
+			o1 => sig1_a_rdm,
+			o2 => sig1_b_rdm,
+			o3 => sig1_c_rdm,
+			o4 => sig1_d_rdm
 		);
 
-	crc_1 : reg16
+	mux2_rdm : mux4x16 
 		port map (
-			clk => clk,
-			rst => rst,
-			ena => enaCRC1,
-			d => sig1_b_crc,
-			q => sig2_b_crc
-		);
-
-	crc_2 : reg16
-		port map (
-			clk => clk,
-			rst => rst,
-			ena => enaCRC2,
-			d => sig1_c_crc,
-			q => sig2_c_crc
-		);
-
-	crc_3 : reg16
-		port map (
-			clk => clk,
-			rst => rst,
-			ena => enaCRC3,
-			d => sig1_d_crc,
-			q => sig2_d_crc
+			output => junk,
+			sel => sel,					--------- obsluzyc
+			i1 => sig2_a_rdm,
+			i2 => sig2_b_rdm,
+			i3 => sig2_c_rdm,
+			i4 => sig2_d_rdm
 		);
 
 
 -------------------------------------
 -- rejestry RDM ka¿dy 16bit 
 -------------------------------------
-	rdm_0 : reg16
+	rdm_0 : reg8it_to16bit
 				port map ( 
 			clk => clk,
 			rst => rst,
@@ -550,7 +566,7 @@ with wren_DATA3 select
 			q => sig2_a_rdm
 		);
 
-	rdm_1 : reg16
+	rdm_1 : reg8it_to16bit
 				port map (
 			clk => clk,
 			rst => rst,
@@ -559,7 +575,7 @@ with wren_DATA3 select
 			q => sig2_b_rdm
 		);
 
-	rdm_2 : reg16
+	rdm_2 : reg8it_to16bit
 				port map (
 			clk => clk,
 			rst => rst,
@@ -568,7 +584,7 @@ with wren_DATA3 select
 			q => sig2_c_rdm
 		);
 
-	rdm_3 : reg16
+	rdm_3 : reg8it_to16bit
 				port map (
 			clk => clk,
 			rst => rst,
@@ -588,10 +604,5 @@ with wren_DATA3 select
 			q => sig2_rlm
 		);
 		
-		
-		
----------------------------------------------------------------------------------------------------<<<<<<<<<<<<<<<<<<<<<<<<
----------------------------------------------------------------------------------------------------TRANSMIT END DO OBSLUZENIA W AUTOMACIE
-transmit_end <= '0';
 
 end data_flow;

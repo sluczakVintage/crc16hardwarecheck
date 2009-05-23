@@ -213,7 +213,7 @@ index_status <= "00";
 				proc_fsb_next <= proc_fsb_comp;
 			end if;
 		when proc_fsb_comp =>
-				-- przekierowac multipleksery i aktywowac REJESTRY (jesli trzeba) TODO
+				
 				index_status <= equal_crc;
 				proc_fsb_next <= proc_fsb_transmit;
 		when proc_fsb_transmit =>

@@ -38,7 +38,7 @@ entity flowcontrol is
 		
 		--OUTPUTS
 			-- enable g³ównego demultipleksera
-		enable_MAINdmux : out std_logic_vector ( 1 downto 0 );
+		enable_MAINdmux : out std_logic_vector ( 0 downto 0 );
 			-- enable demultimpleksera nag³ówka na liczbê modu³ów i d³ugoœæ modu³ów
 		enable_HEADdmux :  out std_logic_vector ( 0 downto 0 );
 			-- enable demultipleksera d³ugoœci modu³ów
@@ -285,73 +285,73 @@ process(flow_fsm_reg, flow_in, cnt_reg, data)
 		when flow_sop => 
 
 		when flow_header_rlm => 
-				enable_MAINdmux <= "01";
+				enable_MAINdmux <= "0";
 				enaRLM <= '1';
 		when flow_header_rdm0 => 
-				enable_MAINdmux <= "01";
+				enable_MAINdmux <= "0";
 				enable_HEADdmux <= "1";
 				enable_RDMdmux <= "00";
 				enaRDM0 <= '1';
 		when flow_header_rdm1 => 
-				enable_MAINdmux <= "01";
+				enable_MAINdmux <= "0";
 				enable_HEADdmux <= "1";
 				enable_RDMdmux <= "01";
 				enaRDM1 <= '1';
 		when flow_header_rdm2 => 
-				enable_MAINdmux <= "01";
+				enable_MAINdmux <= "0";
 				enable_HEADdmux <= "1";
 				enable_RDMdmux <= "10";
 				enaRDM2 <= '1';
 		when flow_header_rdm3 => 	
-				enable_MAINdmux <= "01";
+				enable_MAINdmux <= "0";
 				enable_HEADdmux <= "1";
 				enable_RDMdmux <= "11";
 				enaRDM3 <= '1';
 		when flow_eoh => 
 		
 		when flow_crc0 => 
-				enable_MAINdmux <= "10";
+				enable_MAINdmux <= "1";
 				enable_PACKdmux <= "00";
 				enable_MODdmux0 <= "0";
 				enaCRC0 <= '1';
 		when flow_data0 => 
-				enable_MAINdmux <= "10";
+				enable_MAINdmux <= "1";
 				enable_PACKdmux <= "00";
 				enable_MODdmux0 <= "1";
 				wrenDATA0 <= '1';
 				addr_cnt_clr  <= '0';
 		when flow_crc1 => 
 				mod_passed0 <= '1';
-				enable_MAINdmux <= "10";
+				enable_MAINdmux <= "1";
 				enable_PACKdmux <= "01";
 				enable_MODdmux1 <= "0";
 				enaCRC1 <= '1';
 		when flow_data1 => 
-				enable_MAINdmux <= "10";
+				enable_MAINdmux <= "1";
 				enable_PACKdmux <= "01";
 				enable_MODdmux1 <= "1";	
 				wrenDATA1 <= '1';
 				addr_cnt_clr  <= '0';
 		when flow_crc2 => 	
 				mod_passed1 <= '1';
-				enable_MAINdmux <= "10";
+				enable_MAINdmux <= "1";
 				enable_PACKdmux <= "10";
 				enable_MODdmux2 <= "0";
 				enaCRC2 <= '1';
 		when flow_data2 => 
-				enable_MAINdmux <= "10";
+				enable_MAINdmux <= "1";
 				enable_PACKdmux <= "10";
 				enable_MODdmux2 <= "1";	
 				wrenDATA2 <= '1';
 				addr_cnt_clr  <= '0';
 		when flow_crc3 => 
 				mod_passed2 <= '1';
-				enable_MAINdmux <= "10";
+				enable_MAINdmux <= "1";
 				enable_PACKdmux <= "11";
 				enable_MODdmux3 <= "0";
 				enaCRC3 <= '1';
 		when flow_data3 => 
-				enable_MAINdmux <= "10";
+				enable_MAINdmux <= "1";
 				enable_PACKdmux <= "11";
 				enable_MODdmux3 <= "1";	
 				wrenDATA3 <= '1';

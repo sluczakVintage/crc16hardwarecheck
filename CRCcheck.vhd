@@ -95,14 +95,20 @@ component buforin
 	(
 			-- INPUTS
 			--@@ TODO: nale¿y dodaæ sygna³y z uk³adu steruj¹cego
-		clk : in std_logic;
+		clk : in  std_logic ;
 		rst : in std_logic;
 		data  : in std_logic_vector ( 7 downto 0 );
-		flow_in : in std_logic;
+		trans_mod : in  std_logic_vector ( 1 downto 0 );
+		sel : in std_logic_vector (1 downto 0 );
+		flow_in : in std_logic; 
+		
+		-- sygnaly z crccalc oczekuj¹ce na odczyt z RAM DATA 
 		ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : in std_logic;
-		muxDATA : in std_logic_vector ( 1 downto 0 );
+		-- mux wybierajacy sygnal do odczytu
+		muxDATA : in std_logic_vector ( 1 downto 0 ); 
+		--zewnetrzny clr licznika adresow
 		addr_calc_cnt_clr : in std_logic;
-		sel : in std_logic_vector ( 1 downto 0 );  --<<----- >????????
+		
 		
 			--OUTPUTS
 	--	usb_endread : out std_logic;
@@ -195,7 +201,7 @@ begin
 			data => data,
 			flow_in	=> flow_in,
 			sel => "00",
-		--	usb_endread => usb_endread,
+			trans_mod => trans_mod,
 			data_index => data_index,
 			CRC_index => CRC_index,
 		--	status2_index => status2_index,

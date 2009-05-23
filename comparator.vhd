@@ -65,6 +65,9 @@ begin
 	-- 01 - blad crc
 	-- 00 - ok
 	------------	
-	equal_crc <= '0' & crc_equal;
+	with crc_equal select
+		equal_crc <= "00" when '0',
+					 "01" when others;
+
 
 end behavior;

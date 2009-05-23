@@ -77,7 +77,7 @@ set_global_assignment -name MISC_FILE "F:/workspaces/Quartus/crc16hardwareV2/CRC
 set_global_assignment -name SOURCE_FILE flowcontrol.sim
 set_global_assignment -name VECTOR_WAVEFORM_FILE crccalc.vwf
 set_global_assignment -name SOURCE_FILE crccalc.sim
-set_global_assignment -name INCREMENTAL_VECTOR_INPUT_SOURCE reg2to8.vwf
+set_global_assignment -name INCREMENTAL_VECTOR_INPUT_SOURCE crccalc.vwf
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_global_assignment -name LL_ROOT_REGION ON -section_id "Root Region"

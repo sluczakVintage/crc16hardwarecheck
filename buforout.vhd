@@ -27,10 +27,9 @@ entity buforout is
 		bufout_send : in std_logic;
 		bufout_trans : in std_logic;
 		status_index : in std_logic_vector ( 1 downto 0 );
-	--	status2_index : in std_logic_vector ( 1 downto 0 );
 	
 		--OUTPUTS
-		raport : out std_logic_vector (7 downto 0 ); --<<<<<<zmieniæ na 8bit!!
+		raport : out std_logic_vector (7 downto 0 ); 
 		bufout_done : out std_logic
 		
 	);
@@ -52,7 +51,7 @@ signal bufout_fsb_cur, bufout_fsb_next	: BUFOUT_FSM_STATE_TYPE; --- sygna³y auto
 
 signal ready_bufout, done_bufout : std_logic; 		--sygna³y do komunikacji miêdzy bufout a us
 
-component regs
+component reg2bit_to_8bit
 	port
 	(
 		--INPUTS
@@ -72,7 +71,7 @@ signal enable, clear : std_logic;
 
 begin
 
-	raport_reg : regs
+	raport_reg : reg2bit_to_8bit
 		port map (
 			clk => clk,
 			rst => rst,
