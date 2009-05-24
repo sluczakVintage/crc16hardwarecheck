@@ -40,15 +40,15 @@ entity buforin is
 		addr_calc_cnt_clr : in std_logic;
 		
 --OUTPUTS
-
-		equal_ml : out std_logic;
-		data_index : out std_logic_vector ( 7 downto 0 );
-		CRC_index : out std_logic_vector ( 15 downto 0 );
+		data_index 	: out std_logic_vector ( 7 downto 0 );
+		CRC_index 	: out std_logic_vector ( 15 downto 0 );
 		
-		mod_passed0 : out std_logic;
-		mod_passed1 : out std_logic;
-		mod_passed2 : out std_logic;
-		mod_passed3 : out std_logic	
+		mod_count	: out std_logic_vector ( 7 downto 0 );
+		mod_pass	: out std_logic;
+		mod_passed0 : out std_logic_vector ( 1 downto 0 );
+		mod_passed1 : out std_logic_vector ( 1 downto 0 );
+		mod_passed2 : out std_logic_vector ( 1 downto 0 );
+		mod_passed3 : out std_logic_vector ( 1 downto 0 )
 		
 	
 	);
@@ -93,11 +93,11 @@ component flowcontrol
 		enable_MODdmux3 : out std_logic_vector ( 0 downto 0 );	
 		ena_RLM, ena_RDM0, ena_RDM1, ena_RDM2, ena_RDM3, ena_CRC0, ena_CRC1, ena_CRC2, ena_CRC3, wen_DATA0, wen_DATA1, wen_DATA2, wen_DATA3 : out std_logic;
 		addr_cnt_clr : out std_logic;
-		mod_passed0 : out std_logic;
-		mod_passed1 : out std_logic;
-		mod_passed2 : out std_logic;
-		mod_passed3 : out std_logic;
-		equal_ml : out std_logic
+		mod_pass 	: out std_logic;
+		mod_passed0 : out std_logic_vector ( 1 downto 0 );
+		mod_passed1 : out std_logic_vector ( 1 downto 0 );
+		mod_passed2 : out std_logic_vector ( 1 downto 0 );
+		mod_passed3 : out std_logic_vector ( 1 downto 0 )
 	);
 end component;
 
@@ -302,11 +302,11 @@ begin
 		wen_DATA2	=> wenDATA2, 
 		wen_DATA3	=> wenDATA3,
 		addr_cnt_clr => addr_cnt_clr,
+		mod_pass => mod_pass,
 		mod_passed0 => mod_passed0,
 		mod_passed1 => mod_passed1,
 		mod_passed2 => mod_passed2,
-		mod_passed3 => mod_passed3,
-		equal_ml => equal_ml
+		mod_passed3 => mod_passed3
 		);
 -------------------------------------
 --------MAIN DMUX--------------------
@@ -605,7 +605,7 @@ with wren_DATA3 select
 			rst => rst,
 			ena => enaRLM,
 			d => sig0_head,
-			q => sig2_rlm
+			q => mod_count
 		);
 		
 

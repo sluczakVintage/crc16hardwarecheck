@@ -47,7 +47,7 @@ architecture structure of CRCcheck is
 
 	-- list of signals
 	signal status_index : std_logic_vector ( 1 downto 0 ); 
-	signal equal_crc, equal_ml : std_logic;
+	signal equal_crc : std_logic;
 	signal data_index : std_logic_vector ( 7 downto 0 );
 	signal CRC_index : std_logic_vector ( 15 downto 0 );
 	signal CRC2_index : std_logic_vector ( 15 downto 0 );
@@ -55,7 +55,11 @@ architecture structure of CRCcheck is
 	signal addr_cal_cnt_clr : std_logic;
 	signal ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : std_logic;
 	signal mux_DATA : std_logic_vector ( 1 downto 0 );
-	signal calc_done, bufout_ready, bufout_done, mod_passed0, mod_passed1, mod_passed2, mod_passed3 : std_logic;	
+	signal calc_done, bufout_ready, bufout_done : std_logic;	
+	
+	signal mod_count : std_logic_vector ( 7 downto 0 );
+	signal mod_pass : std_logic;
+	signal mod_passed0, mod_passed1, mod_passed2, mod_passed3 : std_logic_vector ( 1 downto 0 );
 	signal flow_in, calc_start, bufout_trans, bufout_send, transmit_end : std_logic; ---<<<<< TRANSMIT END
 	signal trans_mod : std_logic_vector ( 1 downto 0 );
 	
@@ -70,13 +74,15 @@ component us
 		clk		   	: in std_logic;
 		data_incoming : in std_logic;
 		calc_done	: in std_logic;
-		equal_crc : in std_logic;	
-		equal_ml	: in std_logic;
+		equal_crc : in std_logic;
 		bufout_done : in std_logic;
-		mod_passed0 : in std_logic;
-		mod_passed1 : in std_logic;
-		mod_passed2 : in std_logic;
-		mod_passed3 : in std_logic;	
+		
+		mod_count	: in std_logic_vector ( 7 downto 0 );
+		mod_pass	: in std_logic;
+		mod_passed0 : in std_logic_vector ( 1 downto 0 );
+		mod_passed1 : in std_logic_vector ( 1 downto 0 );
+		mod_passed2 : in std_logic_vector ( 1 downto 0 );
+		mod_passed3 : in std_logic_vector ( 1 downto 0 );	
 
 		-- Output ports
 		flow_in	: out std_logic;
@@ -112,13 +118,15 @@ component buforin
 		
 			--OUTPUTS
 	--	usb_endread : out std_logic;
-		equal_ml : out std_logic;
 		data_index : out std_logic_vector ( 7 downto 0 );
 		CRC_index : out std_logic_vector ( 15 downto 0 );
-		mod_passed0 : out std_logic;
-		mod_passed1 : out std_logic;
-		mod_passed2 : out std_logic;
-		mod_passed3 : out std_logic	
+		
+		mod_count	: out std_logic_vector ( 7 downto 0 );
+		mod_pass	: out std_logic;
+		mod_passed0 : out std_logic_vector ( 1 downto 0 );
+		mod_passed1 : out std_logic_vector ( 1 downto 0 );
+		mod_passed2 : out std_logic_vector ( 1 downto 0 );
+		mod_passed3 : out std_logic_vector ( 1 downto 0 )	
 		
 	);
 end component;	
@@ -179,8 +187,9 @@ begin
 			data_incoming => usb_rxf,
 			calc_done => calc_done,
 			equal_crc => equal_crc,
-			equal_ml => equal_ml,
 			bufout_done => bufout_done,
+			mod_count => mod_count,
+			mod_pass => mod_pass,
 			mod_passed0 => mod_passed0,
 			mod_passed1 => mod_passed1,
 			mod_passed2 => mod_passed2,
@@ -203,7 +212,6 @@ begin
 			trans_mod => trans_mod,
 			data_index => data_index,
 			CRC_index => CRC_index,
-			equal_ml => equal_ml,
 			addr_calc_cnt_clr => addr_cal_cnt_clr,
 			ren_DATA0 => ren_DATA0, 
 			ren_DATA1 => ren_DATA1, 
@@ -211,6 +219,8 @@ begin
 			ren_DATA3 => ren_DATA3, 
 			muxDATA => mux_DATA,
 			
+			mod_count => mod_count,
+			mod_pass => mod_pass,
 			mod_passed0 => mod_passed0,
 			mod_passed1 => mod_passed1,
 			mod_passed2 => mod_passed2,
