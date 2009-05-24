@@ -24,7 +24,7 @@ entity comparator is
 		crc_index : in std_logic_vector ( 15 downto 0 );
 		crc2_index : in std_logic_vector ( 15 downto 0 );
 		--OUTPUTS
-		equal_crc : out std_logic_vector ( 1 downto 0 )	
+		equal_crc : out std_logic
 	);
 end comparator;
 -- Library Clause(s) (optional)
@@ -56,18 +56,16 @@ begin
 				crc1 <= not (crc_index(1) xor crc2_index(1));
 				crc0 <= not (crc_index(0) xor crc2_index(0));
 	
-	-- jeœli wszystkie bity by³y takie same - zero na sygna³ equal_crc			
-	crc_equal <= not (crc15 and crc14 and crc13 and crc12 and crc11 and crc10 and crc9 and crc8 and crc7 and crc6 and crc5 and crc4 and crc3 and crc2 and crc1 and crc0);
+	-- jeœli wszystkie bity by³y takie same - jeden na sygna³ equal_crc			
+	equal_crc <= crc15 and crc14 and crc13 and crc12 and crc11 and crc10 and crc9 and crc8 and crc7 and crc6 and crc5 and crc4 and crc3 and crc2 and crc1 and crc0;
 	
 	--kodowanie status_index na podstawie status
 	-----------
 	-- opis kodowania equal_crc:
-	-- 01 - blad crc
-	-- 00 - ok
+	-- 0 - blad crc
+	-- 1 - ok
 	------------	
-	with crc_equal select
-		equal_crc <= "00" when '0',
-					 "01" when others;
+	
 
 
 end behavior;

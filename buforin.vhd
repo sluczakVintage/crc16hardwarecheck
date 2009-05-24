@@ -30,7 +30,6 @@ entity buforin is
 		rst : in std_logic;
 		data  : in std_logic_vector ( 7 downto 0 );
 		trans_mod : in  std_logic_vector ( 1 downto 0 );
-		sel : in std_logic_vector (1 downto 0 );
 		flow_in : in std_logic; 
 		
 		-- sygnaly z crccalc oczekuj¹ce na odczyt z RAM DATA 
@@ -42,7 +41,7 @@ entity buforin is
 		
 --OUTPUTS
 
-	--	status2_index : out std_logic_vector ( 1 downto 0 );
+		equal_ml : out std_logic;
 		data_index : out std_logic_vector ( 7 downto 0 );
 		CRC_index : out std_logic_vector ( 15 downto 0 );
 		
@@ -68,23 +67,26 @@ component flowcontrol
 
 	port
 	(
-		-- INPUTS
+-- INPUTS
 		clk 			: in std_logic;
 		rst				: in std_logic;
 		flow_in			: in std_logic;
 		data			: in std_logic_vector ( 7 downto 0 );		
+		ml_reg			: in std_logic_vector ( 15 downto 0 );
 		
-		--OUTPUTS
+--OUTPUTS
 
-			-- enable g³ównego demultipleksera
+	-- enable g³ównego demultipleksera
 		enable_MAINdmux : out std_logic_vector ( 0 downto 0 );
-			-- enable demultimpleksera nag³ówka na liczbê modu³ów i d³ugoœæ modu³ów
+	-- enable demultimpleksera nag³ówka na liczbê modu³ów i d³ugoœæ modu³ów
 		enable_HEADdmux :  out std_logic_vector ( 0 downto 0 );
-			-- enable demultipleksera d³ugoœci modu³ów
+	-- enable demultipleksera d³ugoœci modu³ów
 		enable_RDMdmux  : out std_logic_vector ( 1 downto 0 );
-			-- enable demultipleksera danych na modu³y
+	-- enable multilpeksera d³ugoœci modu³ów
+		enable_RDMmux 	: out std_logic_vector ( 1 downto 0 );
+	-- enable demultipleksera danych na modu³y
 		enable_PACKdmux : out std_logic_vector ( 1 downto 0 );
-			-- enable demultipleksera modu³ów na dane i crc
+	-- enable demultipleksera modu³ów na dane i crc
 		enable_MODdmux0 : out std_logic_vector ( 0 downto 0 );	
 		enable_MODdmux1 : out std_logic_vector ( 0 downto 0 );	
 		enable_MODdmux2 : out std_logic_vector ( 0 downto 0 );	
@@ -94,7 +96,8 @@ component flowcontrol
 		mod_passed0 : out std_logic;
 		mod_passed1 : out std_logic;
 		mod_passed2 : out std_logic;
-		mod_passed3 : out std_logic	
+		mod_passed3 : out std_logic;
+		equal_ml : out std_logic
 	);
 end component;
 
@@ -188,10 +191,10 @@ component reg8it_to16bit	----rejestr CRC
 	);
 end component;
 
-
+signal ml_reg : std_logic_vector ( 15 downto 0 );
 signal enaRLM, enaRDM0, enaRDM1, enaRDM2, enaRDM3, enCRC0, enCRC1, enCRC2, enCRC3, wenDATA0, wenDATA1, wenDATA2, wenDATA3 : std_logic;
 signal enaCRC0, enaCRC1, enaCRC2, enaCRC3 : std_logic;
-signal enable_RDMdmux, enable_PACKdmux : std_logic_vector ( 1 downto 0 );
+signal enable_RDMdmux, enable_RDMmux, enable_PACKdmux : std_logic_vector ( 1 downto 0 );
 signal enable_MAINdmux, enable_HEADdmux, enable_MODdmux0, enable_MODdmux1, enable_MODdmux2, enable_MODdmux3 : std_logic_vector ( 0 downto 0 );
 -------------------------------------
 -- sygna³y DATA
@@ -238,8 +241,6 @@ signal sig1_a_crc, sig1_b_crc, sig1_c_crc, sig1_d_crc : std_logic_vector ( 7 dow
 signal sig2_a_crc, sig2_b_crc, sig2_c_crc, sig2_d_crc : std_logic_vector ( 15 downto 0 );
 
 
-signal junk : std_logic_vector ( 15 downto 0 ); --<-----------sygna³ wype³niany przez nieobs³u¿one jeszcze dane
-
 -------------------------------------
 -- do obslugi licznika adresow
 -------------------------------------
@@ -276,10 +277,12 @@ begin
 		rst	=> rst,		
 		flow_in	=> flow_in,	
 		data => data, 	
+		ml_reg => ml_reg,
 	
 		enable_MAINdmux => enable_MAINdmux, 
 		enable_HEADdmux => enable_HEADdmux, 	
 		enable_RDMdmux => enable_RDMdmux,
+		enable_RDMmux => enable_RDMmux,
 		enable_PACKdmux => enable_PACKdmux,	
 		enable_MODdmux0 => enable_MODdmux0,
 		enable_MODdmux1 => enable_MODdmux1,
@@ -302,7 +305,8 @@ begin
 		mod_passed0 => mod_passed0,
 		mod_passed1 => mod_passed1,
 		mod_passed2 => mod_passed2,
-		mod_passed3 => mod_passed3
+		mod_passed3 => mod_passed3,
+		equal_ml => equal_ml
 		);
 -------------------------------------
 --------MAIN DMUX--------------------
@@ -545,8 +549,8 @@ with wren_DATA3 select
 
 	mux2_rdm : mux4x16 
 		port map (
-			output => junk,
-			sel => sel,					--------- obsluzyc
+			output => ml_reg,
+			sel => enable_RDMmux,					
 			i1 => sig2_a_rdm,
 			i2 => sig2_b_rdm,
 			i3 => sig2_c_rdm,

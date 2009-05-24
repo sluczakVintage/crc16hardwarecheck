@@ -46,8 +46,8 @@ end CRCcheck;
 architecture structure of CRCcheck is
 
 	-- list of signals
-	signal status_index, equal_crc : std_logic_vector ( 1 downto 0 );
-	signal status2_index : std_logic_vector ( 1 downto 0 );
+	signal status_index : std_logic_vector ( 1 downto 0 ); 
+	signal equal_crc, equal_ml : std_logic;
 	signal data_index : std_logic_vector ( 7 downto 0 );
 	signal CRC_index : std_logic_vector ( 15 downto 0 );
 	signal CRC2_index : std_logic_vector ( 15 downto 0 );
@@ -70,7 +70,8 @@ component us
 		clk		   	: in std_logic;
 		data_incoming : in std_logic;
 		calc_done	: in std_logic;
-		equal_crc : in std_logic_vector ( 1 downto 0 );	
+		equal_crc : in std_logic;	
+		equal_ml	: in std_logic;
 		bufout_done : in std_logic;
 		mod_passed0 : in std_logic;
 		mod_passed1 : in std_logic;
@@ -99,7 +100,6 @@ component buforin
 		rst : in std_logic;
 		data  : in std_logic_vector ( 7 downto 0 );
 		trans_mod : in  std_logic_vector ( 1 downto 0 );
-		sel : in std_logic_vector (1 downto 0 );
 		flow_in : in std_logic; 
 		
 		-- sygnaly z crccalc oczekuj¹ce na odczyt z RAM DATA 
@@ -112,7 +112,7 @@ component buforin
 		
 			--OUTPUTS
 	--	usb_endread : out std_logic;
-	--	status2_index : out std_logic_vector ( 1 downto 0 );
+		equal_ml : out std_logic;
 		data_index : out std_logic_vector ( 7 downto 0 );
 		CRC_index : out std_logic_vector ( 15 downto 0 );
 		mod_passed0 : out std_logic;
@@ -150,7 +150,7 @@ component comparator
 		CRC_index : in std_logic_vector ( 15 downto 0 );
 		CRC2_index : in std_logic_vector ( 15 downto 0 );
 		--OUTPUTS
-		equal_crc : out std_logic_vector ( 1 downto 0 )
+		equal_crc : out std_logic
 	);
 end component;
 	
@@ -163,7 +163,6 @@ component buforout
 		bufout_send : in std_logic;
 		bufout_trans : in std_logic;
 		status_index : in std_logic_vector ( 1 downto 0 );
-	--	status2_index : in std_logic_vector ( 1 downto 0 );
 			--OUTPUTS
 		raport : out std_logic_vector (7 downto 0 ); 
 		bufout_done : out std_logic
@@ -180,6 +179,7 @@ begin
 			data_incoming => usb_rxf,
 			calc_done => calc_done,
 			equal_crc => equal_crc,
+			equal_ml => equal_ml,
 			bufout_done => bufout_done,
 			mod_passed0 => mod_passed0,
 			mod_passed1 => mod_passed1,
@@ -200,11 +200,10 @@ begin
 			rst => rst,
 			data => data,
 			flow_in	=> flow_in,
-			sel => "00",
 			trans_mod => trans_mod,
 			data_index => data_index,
 			CRC_index => CRC_index,
-		--	status2_index => status2_index,
+			equal_ml => equal_ml,
 			addr_calc_cnt_clr => addr_cal_cnt_clr,
 			ren_DATA0 => ren_DATA0, 
 			ren_DATA1 => ren_DATA1, 
@@ -255,7 +254,6 @@ begin
 			
 		bufout_done => bufout_done, 
 		status_index => status_index,
-	--	status2_index => status2_index,  ----<<<<<<<<<<<<<<<<
 		raport => raport
 		);
 		
