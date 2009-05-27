@@ -32,15 +32,12 @@ entity crccalc is
 		rst : in std_logic;
 		calc_start : in std_logic;
 		data_index : in std_logic_vector (7 downto 0 );
-		trans_mod : in  std_logic_vector ( 1 downto 0 );
+		proc_mod : in  std_logic_vector ( 1 downto 0 );
 		--OUTPUTS
 		calc_done	: out std_logic;
 		crc2_index : out std_logic_vector (15 downto 0 );
 		addr_calc_cnt_clr : out std_logic;
-		addr_calc_cnt_ena : out std_logic;
-	--	ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : out std_logic;
-		muxDATA : out std_logic_vector ( 1 downto 0 )
-		
+		addr_calc_cnt_ena : out std_logic		
 		
 	);
 	
@@ -55,7 +52,7 @@ architecture behavior of crccalc is
 signal wait_forCRC, done_calc : std_logic;
 --sygnaly zawierajace wartosci CRC w roznych fazach
 signal nextCRC, newCRC : std_logic_vector( 15 downto 0 ) := "0000000000000000";
---sygnal zawierajacy dane do przetworzenia w celu unikniecia liczenia CRC dla wartosci konca modulu -->>>MOZNA POTEM ZMIENIC NA ustawianie ren'ow na '0'
+--sygnal zawierajacy dane do przetworzenia
 signal data_to_process : std_logic_vector ( 7 downto 0 ) := "00000000";
 
 --Maszyna stanow odpowiedzialna za liczenie CRC
@@ -68,7 +65,7 @@ type CALC_FSM_STATE_TYPE is (
 signal calc_fsb_reg, calc_fsb_next	: CALC_FSM_STATE_TYPE;
 
 --sygna³y do licznika
-signal cnt_reg, cnt_next: std_logic_vector (3 downto 0);	
+signal cnt_reg, cnt_next: std_logic_vector (4 downto 0);	
 
 component reg16
 	port
@@ -116,17 +113,14 @@ begin
 	end process;
 --	-- Funkcja przejsc-wyjsc
 	
-	process (calc_fsb_reg, calc_start, data_index, trans_mod, cnt_reg)
+	process (calc_fsb_reg, calc_start, data_index, proc_mod, cnt_reg)
 	begin
 	
-		data_to_process <= data_index;
+		data_to_process <= "00000000";
 		done_calc <= '0';
-	--	ren_DATA0 <= '0';
-	--	ren_DATA1 <= '0';
-	--	ren_DATA2 <= '0';
-	--	ren_DATA3 <= '0';
 		addr_calc_cnt_clr  <= '0';
-		muxDATA <= (others => '0');
+		addr_calc_cnt_ena <= '0';
+
 		
 		wait_forCRC <= '0';
 		
@@ -135,30 +129,23 @@ begin
 				if calc_start = '0' then
 					calc_fsb_next <= calc_fsb_idle;
 				else
+					addr_calc_cnt_clr <= '1';
 					calc_fsb_next <= calc_fsb_calculate;
 				end if;
 
 			when calc_fsb_calculate =>
 						addr_calc_cnt_ena <= '1';
-						if trans_mod  = "00" then
-						--	ren_DATA0 <= '1';
-							muxDATA <= "00";
-						elsif trans_mod  = "01" then
-						--	ren_DATA1 <= '1';
-							muxDATA <= "01";
-						elsif trans_mod  = "10" then			
-						--	ren_DATA2 <= '1';
-							muxDATA <= "10";
-						elsif trans_mod  = "11" then
-						--	ren_DATA3 <= '1';
-							muxDATA <= "11";
-						else 
-							calc_fsb_next <= calc_fsb_idle;
-						end if;	
-						
-						if data_index = "00000011" then  
-							data_to_process <= ( others => '0' );
-							calc_fsb_next <= calc_fsb_store;
+
+						wait_forCRC <= '1';
+
+						if cnt_reg >= "00010" then ----------- tego nie powinno byæ
+							data_to_process <= data_index;
+							if data_index = "00000011" then  
+								data_to_process <= ( others => '0' );
+								calc_fsb_next <= calc_fsb_store;
+							else
+							calc_fsb_next <= calc_fsb_calculate;
+							end if;
 						else
 							calc_fsb_next <= calc_fsb_calculate;
 						end if;
@@ -166,7 +153,7 @@ begin
 			when calc_fsb_store =>
 				wait_forCRC <= '1';
 				data_to_process <= ( others => '0' );
-				if cnt_reg = "1011" then
+				if cnt_reg = "10000" then 
 					calc_fsb_next <= calc_fsb_processed;
 				else
 					calc_fsb_next <= calc_fsb_store;

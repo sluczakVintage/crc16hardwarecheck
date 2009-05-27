@@ -47,7 +47,7 @@ entity us is
 		calc_start	: out std_logic;
 		bufout_trans: out std_logic;
 		bufout_send	: out std_logic;
-		trans_mod : out std_logic_vector ( 1 downto 0 )
+		proc_mod : out std_logic_vector ( 1 downto 0 )
 	);
 end us;
 
@@ -88,7 +88,8 @@ signal mod_processed, start_calc, start_comp, start_trans : std_logic;
 signal mod_trans, index_status  : std_logic_vector ( 1 downto 0 );
 signal status_0bit, status_1bit : std_logic;
 signal status_0bit_reg, status_1bit_reg : std_logic;
-
+signal status_0bit_next, status_1bit_next : std_logic;
+signal record_stat0, record_stat1 : std_logic;
 begin
 
 
@@ -149,8 +150,9 @@ begin
 	start_processing <= '0';
 	flow_in <= '0';
 	bufout_send <= '0';
-	trans_mod <= "00";
+	proc_mod <= "00";
 	status_0bit <= '0';
+	record_stat0 <= '0';
 	
 	case main_fsb_reg is
 	
@@ -165,9 +167,11 @@ begin
 		when main_fsb_receive => -- jesli dane z pierwszego pakietu juz zostaly odebrane, zacznij je przetwarzac
 			if mod_passed0_reg = "11" then
 				status_0bit <= '1';
+				record_stat0 <= '1';
 				main_fsb_next <= main_fsb_proc0;
 			elsif mod_passed0_reg = "10" then
 				status_0bit <= '0';
+				record_stat0 <= '1';
 				main_fsb_next <= main_fsb_busy0;
 			else
 				flow_in <= '1';
@@ -182,7 +186,7 @@ begin
 					main_fsb_next <= main_fsb_busy0;
 				end if;
 			else
-				trans_mod <= "00";
+				proc_mod <= "00";
 				start_processing <= '1'; -- zacznij przetwarzanie
 				main_fsb_next <= main_fsb_proc0;
 			end if;
@@ -190,9 +194,11 @@ begin
 		when main_fsb_busy0 => -- jesli dane przetworzone, rozpocznij przetwarzanie nastepnych
 			if mod_passed1_reg = "11" then
 				status_0bit <= '1';
+				record_stat0 <= '1';
 				main_fsb_next <= main_fsb_proc1;
 			elsif mod_passed1_reg = "10" then
 				status_0bit <= '0';
+				record_stat0 <= '1';
 				main_fsb_next <= main_fsb_busy1;
 			else
 				main_fsb_next <= main_fsb_busy0;
@@ -206,7 +212,7 @@ begin
 					main_fsb_next <= main_fsb_busy1;
 				end if;
 			else
-				trans_mod <= "01";
+				proc_mod <= "01";
 				start_processing <= '1'; -- zacznij przetwarzanie
 				main_fsb_next <= main_fsb_proc1;
 			end if;
@@ -214,9 +220,11 @@ begin
 		when main_fsb_busy1 => -- jesli dane przetworzone, rozpocznij przetwarzanie nastepnych
 			if mod_passed2_reg = "11" then
 				status_0bit <= '1';
+				record_stat0 <= '1';
 				main_fsb_next <= main_fsb_proc2;
 			elsif mod_passed2_reg = "10" then
 				status_0bit <= '0';
+				record_stat0 <= '1';
 				main_fsb_next <= main_fsb_busy2;
 			else
 				main_fsb_next <= main_fsb_busy1;
@@ -230,7 +238,7 @@ begin
 					main_fsb_next <= main_fsb_busy2;
 				end if;
 			else
-				trans_mod <= "10";
+				proc_mod <= "10";
 				start_processing <= '1'; -- zacznij przetwarzanie
 				main_fsb_next <= main_fsb_proc2;
 			end if;
@@ -238,9 +246,11 @@ begin
 		when main_fsb_busy2 => -- jesli dane przetworzone, rozpocznij przetwarzanie nastepnych
 			if mod_passed3_reg = "11" then
 				status_0bit <= '1';
+				record_stat0 <= '1';
 				main_fsb_next <= main_fsb_proc3;
 			elsif mod_passed3_reg = "10" then
 				status_0bit <= '0';
+				record_stat0 <= '1';
 				main_fsb_next <= main_fsb_send;
 			else
 				main_fsb_next <= main_fsb_busy2;
@@ -250,7 +260,7 @@ begin
 			if mod_processed = '1' then
 				main_fsb_next <= main_fsb_send;
 			else
-				trans_mod <= "11";
+				proc_mod <= "11";
 				start_processing <= '1'; -- zacznij przetwarzanie
 				main_fsb_next <= main_fsb_proc3;
 			end if;
@@ -278,13 +288,14 @@ end process;
 	bufout_trans <= '0';
 	mod_processed <= '0';
 	status_1bit <= '0';
+	record_stat1 <= '0';
 	
 		case proc_fsb_reg is
 			when proc_fsb_idle =>  
 				if start_processing = '0' then 
 					proc_fsb_next <= proc_fsb_idle;
-				elsif status_0bit = '1' then
-					proc_fsb_next <= proc_fsb_transmit;
+				--elsif status_0bit = '1' then
+				--	proc_fsb_next <= proc_fsb_transmit;
 				else						-- jesli jest rozkaz zacznij przetwarzac
 					proc_fsb_next <= proc_fsb_calc;
 					calc_start <= '1'; 
@@ -299,6 +310,7 @@ end process;
 				
 			when proc_fsb_comp =>	
 					status_1bit <= equal_crc;
+					record_stat1 <= '1';
 					proc_fsb_next <= proc_fsb_transmit;
 					
 			when proc_fsb_transmit =>
@@ -316,12 +328,30 @@ end process;
 
 -----------------
 
+	process (status_0bit_reg, record_stat0, status_0bit)
+	begin
+		if record_stat0 = '1' then
+			status_0bit_next <= status_0bit;
+		else
+			status_0bit_next <= status_0bit_reg;
+		end if;
+	end process;
+	
 	process (clk, rst)
 	begin
 		if rst = '1' then
 			status_0bit_reg <= '0';	
 		elsif rising_edge(clk) then
-			status_0bit_reg <= status_0bit;
+			status_0bit_reg <= status_0bit_next;
+		end if;
+	end process;
+
+	process (status_1bit_reg, record_stat1, status_1bit)
+	begin
+		if record_stat1 = '1' then
+			status_1bit_next <= status_1bit;
+		else
+			status_1bit_next <= status_1bit_reg;
 		end if;
 	end process;
 
@@ -330,7 +360,7 @@ end process;
 		if rst = '1' then
 			status_1bit_reg <= '0';	
 		elsif rising_edge(clk) then
-			status_1bit_reg <= status_1bit;
+			status_1bit_reg <= status_1bit_next;
 		end if;
 	end process;
 

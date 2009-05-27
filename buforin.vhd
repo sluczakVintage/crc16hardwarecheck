@@ -28,15 +28,16 @@ entity buforin is
 		clk : in  std_logic ;
 		rst : in std_logic;
 		data  : in std_logic_vector ( 7 downto 0 );
-		trans_mod : in  std_logic_vector ( 1 downto 0 );
+		proc_mod : in  std_logic_vector ( 1 downto 0 );
 		flow_in : in std_logic; 
 		
 		-- sygnaly z crccalc oczekuj¹ce na odczyt z RAM DATA 
 	--	ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : in std_logic;
 		-- mux wybierajacy sygnal do odczytu
-		muxDATA : in std_logic_vector ( 1 downto 0 ); 
+	--	muxDATA : in std_logic_vector ( 1 downto 0 ); 
 		--zewnetrzny clr licznika adresow
 		addr_calc_cnt_clr : in std_logic;
+		addr_calc_cnt_ena : in std_logic;
 		
 		
 --OUTPUTS
@@ -109,9 +110,14 @@ signal sig2_a_crc, sig2_b_crc, sig2_c_crc, sig2_d_crc : std_logic_vector ( 15 do
 -------------------------------------
 -- do obslugi licznika adresow
 -------------------------------------
-signal addr_cnt_reg, addr_cnt_next : std_logic_vector ( 9 downto 0);
-signal addr_cnt_clr : std_logic; 
-signal addr_flow_cnt_clr : std_logic;
+signal addr_cnt_reg0, addr_cnt_next0 : std_logic_vector ( 9 downto 0 );
+signal addr_cnt_reg1, addr_cnt_next1 : std_logic_vector ( 9 downto 0 );
+signal addr_cnt_reg2, addr_cnt_next2 : std_logic_vector ( 9 downto 0 );
+signal addr_cnt_reg3, addr_cnt_next3 : std_logic_vector ( 9 downto 0 );
+signal addr_flow_cnt_clr, addr_cnt_clr0, addr_cnt_clr1, addr_cnt_clr2, addr_cnt_clr3  : std_logic;
+signal addr_flow_cnt_ena, addr_cnt_ena0, addr_cnt_ena1, addr_cnt_ena2, addr_cnt_ena3  : std_logic;
+signal trans_mod : std_logic_vector ( 1 downto 0 );
+
 
 
 -----------------------------------
@@ -147,7 +153,11 @@ component flowcontrol
 		enable_MODdmux2 : out std_logic_vector ( 0 downto 0 );	
 		enable_MODdmux3 : out std_logic_vector ( 0 downto 0 );	
 		ena_RLM, ena_RDM0, ena_RDM1, ena_RDM2, ena_RDM3, ena_CRC0, ena_CRC1, ena_CRC2, ena_CRC3, wen_DATA0, wen_DATA1, wen_DATA2, wen_DATA3 : out std_logic;
+		
 		addr_flow_cnt_clr : out std_logic;
+		addr_flow_cnt_ena : out std_logic;
+		trans_mod : out  std_logic_vector ( 1 downto 0 );
+
 
 		
 		mod_pass0	: out std_logic;
@@ -256,28 +266,122 @@ end component;
 ------------------------------------------------- BEGIN
 ----------------------------------------------
 begin
--- Opis dzialania licznika adresow
-
+-- Opis dzialania licznika adresow RAM
+-------------------------
+----------------Licznik 0
+-------------------------
 	process (clk, rst)
 	begin
 		if rst = '1'  then
-			addr_cnt_reg <= ( others => '0' );
+			addr_cnt_reg0 <= ( others => '0' );
 		elsif rising_edge(clk) then
-			addr_cnt_reg <=addr_cnt_next;
+			addr_cnt_reg0 <= addr_cnt_next0;
 		end if;
 	end process;
 
-	process (addr_cnt_reg, addr_flow_cnt_clr, addr_calc_cnt_clr)
+addr_cnt_clr0 <= '1' when ((addr_flow_cnt_clr = '1') AND ( trans_mod = "00")) OR ( (addr_calc_cnt_clr = '1') AND (proc_mod = "00") )
+					else
+				'0';
+addr_cnt_ena0 <= '1' when ((addr_flow_cnt_ena = '1') AND ( trans_mod = "00")) OR ( (addr_calc_cnt_ena = '1') AND (proc_mod = "00") )
+					else
+ 				'0';
+	process (addr_cnt_reg0, addr_cnt_ena0, addr_cnt_clr0)
 	begin
-		if (addr_flow_cnt_clr = '1') OR (addr_calc_cnt_clr = '1') then
-
-			addr_cnt_next <= ( others => '0' );
-		else
-			 addr_cnt_next <= addr_cnt_reg + "1";
+		if addr_cnt_clr0 = '1' then
+			addr_cnt_next0 <= ( others => '0' );
+		elsif addr_cnt_ena0 = '1' then
+			addr_cnt_next0 <= addr_cnt_reg0 + "1";
+		else 
+			addr_cnt_next0 <= addr_cnt_reg0;
 		end if;
-	end process;			  
-	
+	end process;
+-------------------------	
+----------------Licznik 1
+-------------------------
+	process (clk, rst)
+	begin
+		if rst = '1'  then
+			addr_cnt_reg1 <= ( others => '0' );
+		elsif rising_edge(clk) then
+			addr_cnt_reg1 <= addr_cnt_next1;
+		end if;
+	end process;
 
+addr_cnt_clr1 <= '1' when ((addr_flow_cnt_clr = '1') AND ( trans_mod = "01")) OR ( (addr_calc_cnt_clr = '1') AND (proc_mod = "01") )
+					else
+				'0';
+addr_cnt_ena1 <= '1' when ((addr_flow_cnt_ena = '1') AND ( trans_mod = "01")) OR ( (addr_calc_cnt_ena = '1') AND (proc_mod = "01") )
+					else
+ 				'0';
+ 				
+	process (addr_cnt_reg1, addr_cnt_ena1,  addr_cnt_clr1)
+	begin
+		if addr_cnt_clr1 = '1' then
+			addr_cnt_next1 <= ( others => '0' );
+		elsif addr_cnt_ena1 = '1' then
+			addr_cnt_next1 <= addr_cnt_reg1 + "1";
+		else 
+			addr_cnt_next1 <= addr_cnt_reg1;
+		end if;
+	end process;
+-------------------------
+----------------Licznik 2
+-------------------------
+	process (clk, rst)
+	begin
+		if rst = '1'  then
+			addr_cnt_reg2 <= ( others => '0' );
+		elsif rising_edge(clk) then
+			addr_cnt_reg2 <= addr_cnt_next2;
+		end if;
+	end process;
+
+addr_cnt_clr2 <= '1' when ((addr_flow_cnt_clr = '1') AND ( trans_mod = "10")) OR ( (addr_calc_cnt_clr = '1') AND (proc_mod = "10") )
+					else
+				'0';
+addr_cnt_ena2 <= '1' when ((addr_flow_cnt_ena = '1') AND ( trans_mod = "10")) OR ( (addr_calc_cnt_ena = '1') AND (proc_mod = "10") )
+					else
+ 				'0';
+ 				
+	process (addr_cnt_reg2, addr_cnt_ena2, addr_cnt_clr2)
+	begin
+		if addr_cnt_clr2 = '1' then
+			addr_cnt_next2 <= ( others => '0' );
+		elsif addr_cnt_ena2 = '1' then
+			addr_cnt_next2 <= addr_cnt_reg2 + "1";
+		else 
+			addr_cnt_next2 <= addr_cnt_reg2;
+		end if;
+	end process;		  
+-------------------------
+----------------Licznik 3
+-------------------------
+	process (clk, rst)
+	begin
+		if rst = '1'  then
+			addr_cnt_reg3 <= ( others => '0' );
+		elsif rising_edge(clk) then
+			addr_cnt_reg3 <= addr_cnt_next3;
+		end if;
+	end process;
+
+addr_cnt_clr3 <= '1' when ((addr_flow_cnt_clr = '1') AND ( trans_mod = "11")) OR ( (addr_calc_cnt_clr = '1') AND (proc_mod = "11") )
+					else
+				'0';
+addr_cnt_ena3 <= '1' when ((addr_flow_cnt_ena = '1') AND ( trans_mod = "11")) OR ( (addr_calc_cnt_ena = '1') AND (proc_mod = "11") )
+					else
+ 				'0';
+ 				
+	process (addr_cnt_reg3, addr_cnt_ena3,  addr_cnt_clr3)
+	begin
+		if addr_cnt_clr3 = '1' then
+			addr_cnt_next3 <= ( others => '0' );
+		elsif addr_cnt_ena3 = '1' then
+			addr_cnt_next3 <= addr_cnt_reg3 + "1";
+		else 
+			addr_cnt_next3 <= addr_cnt_reg3;
+		end if;
+	end process;	
 
 -------------------------------------
 --------UBER FLOW CONTROL
@@ -313,6 +417,8 @@ begin
 		wen_DATA2	=> wrenDATA2, 
 		wen_DATA3	=> wrenDATA3,
 		addr_flow_cnt_clr => addr_flow_cnt_clr,
+		addr_flow_cnt_ena => addr_flow_cnt_ena,
+		trans_mod => trans_mod,
 
 		mod_pass0 => mod_pass0,
 		mod_pass1 => mod_pass1,
@@ -444,7 +550,7 @@ dmux_pack : dmux4x8
 	mux_crc : mux4x16
 		port map (
 			output => CRC_index,			----- tu powinien byæ sygna³ id¹cy do komparatora
-			sel => trans_mod,
+			sel => proc_mod,
 			i1 => sig2_a_crc,
 			i2 => sig2_b_crc,
 			i3 => sig2_c_crc,
@@ -456,14 +562,13 @@ dmux_pack : dmux4x8
 	mux_data : mux4x8 
 		port map (
 			output => data_index,			----- tu powinien byæ sygna³ id¹cy do crccalc
-			sel => muxDATA,
+			sel => proc_mod,
 			i1 => sig2_a_data,
 			i2 => sig2_b_data,
 			i3 => sig2_c_data,
 			i4 => sig2_d_data
 		);
 		
-
 -------------------------------------
 --------ram data --------------------
 -------------------------------------
@@ -473,7 +578,7 @@ dmux_pack : dmux4x8
 		PORT MAP (
 		wren => wrenDATA0,	
 		clock => clk,	
-		address =>  addr_cnt_reg, 
+		address =>  addr_cnt_reg0, 
 		data => sig1_a_data,
 		q => sig2_a_data		-- wyjœcie
 	);
@@ -482,7 +587,7 @@ dmux_pack : dmux4x8
 		PORT MAP (
 		wren => wrenDATA1,	
 		clock => clk,	
-		address => addr_cnt_reg, 
+		address => addr_cnt_reg1, 
 		data => sig1_b_data,
 		q => sig2_b_data		-- wyjœcie
 	);
@@ -491,7 +596,7 @@ dmux_pack : dmux4x8
 		PORT MAP (
 		wren => wrenDATA2,	
 		clock => clk,	
-		address => addr_cnt_reg, 
+		address => addr_cnt_reg2, 
 		data => sig1_c_data,
 		q => sig2_c_data		-- wyjœcie
 	);
@@ -500,7 +605,7 @@ dmux_pack : dmux4x8
 		PORT MAP (
 		wren => wrenDATA3,	
 		clock => clk,	
-		address => addr_cnt_reg, 
+		address => addr_cnt_reg3, 
 		data => sig1_d_data,
 		q => sig2_d_data		-- wyjœcie
 	);

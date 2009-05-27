@@ -118,7 +118,7 @@ process(bufout_fsb_cur, bufout_trans, bufout_send)
 
 			when bufout_sending =>
 				bufout_fsb_next <= bufout_idle;
-				clear <= '1';
+			--	clear <= '1';
 		end case;				
 			
 	end process;

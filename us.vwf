@@ -224,16 +224,6 @@ SIGNAL("mod_count[0]")
 	PARENT = "mod_count";
 }
 
-SIGNAL("mod_pass")
-{
-	VALUE_TYPE = NINE_LEVEL_BIT;
-	SIGNAL_TYPE = SINGLE_BIT;
-	WIDTH = 1;
-	LSB_INDEX = -1;
-	DIRECTION = INPUT;
-	PARENT = "";
-}
-
 SIGNAL("mod_passed1")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
@@ -414,7 +404,77 @@ SIGNAL("status_index[0]")
 	PARENT = "status_index";
 }
 
-SIGNAL("trans_mod")
+SIGNAL("mod_pass0")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = INPUT;
+	PARENT = "";
+}
+
+SIGNAL("mod_pass1")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = INPUT;
+	PARENT = "";
+}
+
+SIGNAL("mod_pass2")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = INPUT;
+	PARENT = "";
+}
+
+SIGNAL("mod_pass3")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = INPUT;
+	PARENT = "";
+}
+
+SIGNAL("bufout_send")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = OUTPUT;
+	PARENT = "";
+}
+
+SIGNAL("bufout_trans")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = OUTPUT;
+	PARENT = "";
+}
+
+SIGNAL("calc_start")
+{
+	VALUE_TYPE = NINE_LEVEL_BIT;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = OUTPUT;
+	PARENT = "";
+}
+
+SIGNAL("proc_mod")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
 	SIGNAL_TYPE = BUS;
@@ -424,24 +484,24 @@ SIGNAL("trans_mod")
 	PARENT = "";
 }
 
-SIGNAL("trans_mod[1]")
+SIGNAL("proc_mod[1]")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
 	SIGNAL_TYPE = SINGLE_BIT;
 	WIDTH = 1;
 	LSB_INDEX = -1;
 	DIRECTION = OUTPUT;
-	PARENT = "trans_mod";
+	PARENT = "proc_mod";
 }
 
-SIGNAL("trans_mod[0]")
+SIGNAL("proc_mod[0]")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
 	SIGNAL_TYPE = SINGLE_BIT;
 	WIDTH = 1;
 	LSB_INDEX = -1;
 	DIRECTION = OUTPUT;
-	PARENT = "trans_mod";
+	PARENT = "proc_mod";
 }
 
 TRANSITION_LIST("clk")
@@ -597,18 +657,7 @@ TRANSITION_LIST("mod_count[0]")
 	NODE
 	{
 		REPEAT = 1;
-		LEVEL 0 FOR 1000.0;
-	}
-}
-
-TRANSITION_LIST("mod_pass")
-{
-	NODE
-	{
-		REPEAT = 1;
-		LEVEL 0 FOR 10.0;
-		LEVEL 1 FOR 10.0;
-		LEVEL 0 FOR 980.0;
+		LEVEL 1 FOR 1000.0;
 	}
 }
 
@@ -617,7 +666,9 @@ TRANSITION_LIST("mod_passed1[1]")
 	NODE
 	{
 		REPEAT = 1;
-		LEVEL 0 FOR 1000.0;
+		LEVEL 0 FOR 70.0;
+		LEVEL 1 FOR 10.0;
+		LEVEL 0 FOR 920.0;
 	}
 }
 
@@ -626,7 +677,9 @@ TRANSITION_LIST("mod_passed1[0]")
 	NODE
 	{
 		REPEAT = 1;
-		LEVEL 0 FOR 1000.0;
+		LEVEL 0 FOR 70.0;
+		LEVEL 1 FOR 10.0;
+		LEVEL 0 FOR 920.0;
 	}
 }
 
@@ -733,7 +786,47 @@ TRANSITION_LIST("status_index[0]")
 	}
 }
 
-TRANSITION_LIST("trans_mod[1]")
+TRANSITION_LIST("mod_pass0")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL 0 FOR 10.0;
+		LEVEL 1 FOR 10.0;
+		LEVEL 0 FOR 980.0;
+	}
+}
+
+TRANSITION_LIST("mod_pass1")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL 0 FOR 70.0;
+		LEVEL 1 FOR 10.0;
+		LEVEL 0 FOR 920.0;
+	}
+}
+
+TRANSITION_LIST("mod_pass2")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL 0 FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("mod_pass3")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL 0 FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("bufout_send")
 {
 	NODE
 	{
@@ -742,7 +835,34 @@ TRANSITION_LIST("trans_mod[1]")
 	}
 }
 
-TRANSITION_LIST("trans_mod[0]")
+TRANSITION_LIST("bufout_trans")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL X FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("calc_start")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL X FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("proc_mod[1]")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL X FOR 1000.0;
+	}
+}
+
+TRANSITION_LIST("proc_mod[0]")
 {
 	NODE
 	{
@@ -780,7 +900,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "bufout_done";
+	CHANNEL = "main_fsb_reg";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 3;
@@ -789,7 +909,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "calc_done";
+	CHANNEL = "proc_fsb_reg";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 4;
@@ -798,7 +918,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "equal_crc";
+	CHANNEL = "bufout_done";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 5;
@@ -807,7 +927,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "main_fsb_reg";
+	CHANNEL = "calc_done";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 6;
@@ -816,7 +936,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "proc_fsb_reg";
+	CHANNEL = "equal_crc";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 7;
@@ -915,7 +1035,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "mod_pass";
+	CHANNEL = "status_0bit_reg";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 17;
@@ -924,67 +1044,64 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "mod_passed1";
+	CHANNEL = "status_1bit_reg";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 18;
 	TREE_LEVEL = 0;
-	CHILDREN = 19, 20;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "mod_passed1[1]";
+	CHANNEL = "mod_pass0";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 19;
-	TREE_LEVEL = 1;
-	PARENT = 18;
+	TREE_LEVEL = 0;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "mod_passed1[0]";
+	CHANNEL = "mod_passed0";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 20;
-	TREE_LEVEL = 1;
-	PARENT = 18;
+	TREE_LEVEL = 0;
+	CHILDREN = 21, 22;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "mod_passed2";
+	CHANNEL = "mod_passed0[1]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 21;
-	TREE_LEVEL = 0;
-	CHILDREN = 22, 23;
+	TREE_LEVEL = 1;
+	PARENT = 20;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "mod_passed2[1]";
+	CHANNEL = "mod_passed0[0]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 22;
 	TREE_LEVEL = 1;
-	PARENT = 21;
+	PARENT = 20;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "mod_passed2[0]";
+	CHANNEL = "mod_pass1";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 23;
-	TREE_LEVEL = 1;
-	PARENT = 21;
+	TREE_LEVEL = 0;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "mod_passed3";
+	CHANNEL = "mod_passed1";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 24;
@@ -994,7 +1111,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "mod_passed3[1]";
+	CHANNEL = "mod_passed1[1]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 25;
@@ -1004,7 +1121,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "mod_passed3[0]";
+	CHANNEL = "mod_passed1[0]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 26;
@@ -1014,46 +1131,46 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "mod_passed0";
+	CHANNEL = "mod_pass2";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 27;
 	TREE_LEVEL = 0;
-	CHILDREN = 28, 29;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "mod_passed0[1]";
+	CHANNEL = "mod_passed2";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 28;
-	TREE_LEVEL = 1;
-	PARENT = 27;
+	TREE_LEVEL = 0;
+	CHILDREN = 29, 30;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "mod_passed0[0]";
+	CHANNEL = "mod_passed2[1]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 29;
 	TREE_LEVEL = 1;
-	PARENT = 27;
+	PARENT = 28;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "status_0bit_reg";
+	CHANNEL = "mod_passed2[0]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 30;
-	TREE_LEVEL = 0;
+	TREE_LEVEL = 1;
+	PARENT = 28;
 }
 
 DISPLAY_LINE
 {
-	CHANNEL = "status_1bit_reg";
+	CHANNEL = "mod_pass3";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 31;
@@ -1062,7 +1179,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "status_index";
+	CHANNEL = "mod_passed3";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 32;
@@ -1072,7 +1189,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "status_index[1]";
+	CHANNEL = "mod_passed3[1]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 33;
@@ -1082,7 +1199,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "status_index[0]";
+	CHANNEL = "mod_passed3[0]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 34;
@@ -1092,7 +1209,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "trans_mod";
+	CHANNEL = "proc_mod";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 35;
@@ -1102,7 +1219,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "trans_mod[1]";
+	CHANNEL = "proc_mod[1]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 36;
@@ -1112,7 +1229,7 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "trans_mod[0]";
+	CHANNEL = "proc_mod[0]";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 37;
@@ -1122,10 +1239,67 @@ DISPLAY_LINE
 
 DISPLAY_LINE
 {
-	CHANNEL = "flow_in";
+	CHANNEL = "status_index";
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = Binary;
 	TREE_INDEX = 38;
+	TREE_LEVEL = 0;
+	CHILDREN = 39, 40;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "status_index[1]";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 39;
+	TREE_LEVEL = 1;
+	PARENT = 38;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "status_index[0]";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 40;
+	TREE_LEVEL = 1;
+	PARENT = 38;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "bufout_send";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 41;
+	TREE_LEVEL = 0;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "bufout_trans";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 42;
+	TREE_LEVEL = 0;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "calc_start";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 43;
+	TREE_LEVEL = 0;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "flow_in";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = Binary;
+	TREE_INDEX = 44;
 	TREE_LEVEL = 0;
 }
 

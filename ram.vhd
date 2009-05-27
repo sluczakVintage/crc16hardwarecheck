@@ -97,18 +97,18 @@ BEGIN
 		operation_mode => "SINGLE_PORT",
 		outdata_aclr_a => "NONE",
 		outdata_reg_a => "CLOCK0",
-		power_up_uninitialized => "FALSE",
+		power_up_uninitialized => "TRUE",
 		widthad_a => 10,
 		width_a => 8,
 		width_byteena_a => 1,
 		wrcontrol_aclr_a => "NONE"
 	)
 	PORT MAP (
-		wren_a => wren,		-- write / read enable	
+		wren_a => wren,
 		clock0 => clock,
 		address_a => address,
 		data_a => data,
-		q_a => sub_wire0		-- wyjœcie
+		q_a => sub_wire0
 	);
 
 
@@ -132,7 +132,7 @@ END SYN;
 -- Retrieval info: PRIVATE: DataBusSeparated NUMERIC "1"
 -- Retrieval info: PRIVATE: IMPLEMENT_IN_LES NUMERIC "0"
 -- Retrieval info: PRIVATE: INIT_FILE_LAYOUT STRING "PORT_A"
--- Retrieval info: PRIVATE: INIT_TO_SIM_X NUMERIC "0"
+-- Retrieval info: PRIVATE: INIT_TO_SIM_X NUMERIC "1"
 -- Retrieval info: PRIVATE: INTENDED_DEVICE_FAMILY STRING "Stratix"
 -- Retrieval info: PRIVATE: JTAG_ENABLED NUMERIC "0"
 -- Retrieval info: PRIVATE: JTAG_ID STRING "NONE"
@@ -160,7 +160,7 @@ END SYN;
 -- Retrieval info: CONSTANT: OPERATION_MODE STRING "SINGLE_PORT"
 -- Retrieval info: CONSTANT: OUTDATA_ACLR_A STRING "NONE"
 -- Retrieval info: CONSTANT: OUTDATA_REG_A STRING "CLOCK0"
--- Retrieval info: CONSTANT: POWER_UP_UNINITIALIZED STRING "FALSE"
+-- Retrieval info: CONSTANT: POWER_UP_UNINITIALIZED STRING "TRUE"
 -- Retrieval info: CONSTANT: WIDTHAD_A NUMERIC "10"
 -- Retrieval info: CONSTANT: WIDTH_A NUMERIC "8"
 -- Retrieval info: CONSTANT: WIDTH_BYTEENA_A NUMERIC "1"
