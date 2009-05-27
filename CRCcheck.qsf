@@ -38,7 +38,7 @@
 
 set_global_assignment -name FAMILY Stratix
 set_global_assignment -name DEVICE AUTO
-set_global_assignment -name TOP_LEVEL_ENTITY CRCcheck
+set_global_assignment -name TOP_LEVEL_ENTITY buforin
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 9.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "23:33:23  MAY 03, 2009"
 set_global_assignment -name LAST_QUARTUS_VERSION 9.0
@@ -78,9 +78,13 @@ set_global_assignment -name SOURCE_FILE flowcontrol.sim
 set_global_assignment -name VECTOR_WAVEFORM_FILE crccalc.vwf
 set_global_assignment -name SOURCE_FILE crccalc.sim
 set_global_assignment -name VECTOR_WAVEFORM_FILE flow2.vwf
-set_global_assignment -name INCREMENTAL_VECTOR_INPUT_SOURCE us.vwf
+set_global_assignment -name VECTOR_WAVEFORM_FILE CRCcheckFINAL.vwf
+set_global_assignment -name VECTOR_WAVEFORM_FILE CRCcheckFCUK.vwf
+set_global_assignment -name CHECK_OUTPUTS OFF
+set_global_assignment -name VECTOR_WAVEFORM_FILE ram.vwf
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_global_assignment -name LL_ROOT_REGION ON -section_id "Root Region"
 set_global_assignment -name LL_MEMBER_STATE LOCKED -section_id "Root Region"
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
+set_global_assignment -name INCREMENTAL_VECTOR_INPUT_SOURCE buforin.vwf

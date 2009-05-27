@@ -19,7 +19,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
-use work.PCK_CRC16_D8.all;
 
 entity buforin is
 	port
@@ -33,18 +32,23 @@ entity buforin is
 		flow_in : in std_logic; 
 		
 		-- sygnaly z crccalc oczekuj¹ce na odczyt z RAM DATA 
-		ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : in std_logic;
+	--	ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : in std_logic;
 		-- mux wybierajacy sygnal do odczytu
 		muxDATA : in std_logic_vector ( 1 downto 0 ); 
 		--zewnetrzny clr licznika adresow
 		addr_calc_cnt_clr : in std_logic;
+		
 		
 --OUTPUTS
 		data_index 	: out std_logic_vector ( 7 downto 0 );
 		CRC_index 	: out std_logic_vector ( 15 downto 0 );
 		
 		mod_count	: out std_logic_vector ( 7 downto 0 );
-		mod_pass	: out std_logic;
+		
+		mod_pass0	: out std_logic;
+		mod_pass1	: out std_logic;
+		mod_pass2	: out std_logic;
+		mod_pass3	: out std_logic;
 		mod_passed0 : out std_logic_vector ( 1 downto 0 );
 		mod_passed1 : out std_logic_vector ( 1 downto 0 );
 		mod_passed2 : out std_logic_vector ( 1 downto 0 );
@@ -57,11 +61,62 @@ end buforin;
 
 architecture data_flow of buforin is
 
+signal ml_reg : std_logic_vector ( 15 downto 0 );
+signal enaRLM, enaRDM0, enaRDM1, enaRDM2, enaRDM3, enaCRC0, enaCRC1, enaCRC2, enaCRC3 : std_logic;
+signal wrenDATA0, wrenDATA1, wrenDATA2, wrenDATA3 : std_logic;
+signal enable_RDMdmux, enable_RDMmux, enable_PACKdmux : std_logic_vector ( 1 downto 0 );
+signal enable_MAINdmux, enable_HEADdmux, enable_MODdmux0, enable_MODdmux1, enable_MODdmux2, enable_MODdmux3 : std_logic_vector ( 0 downto 0 );
+-------------------------------------
+-- sygna³y DATA
+-------------------------------------
+signal sig0_main, sig1_main : std_logic_vector (7 downto 0 );
+
+-------------------------------------
+--sygna³y HEAD 
+-------------------------------------
+signal sig0_head, sig1_head : std_logic_vector ( 7 downto 0 );
+
+-------------------------------------
+--sygna³y PACK
+-------------------------------------
+signal sig00_pack, sig01_pack, sig10_pack, sig11_pack : std_logic_vector ( 7 downto 0 );
+
+-------------------------------------
+--sygna³y RLM
+-------------------------------------
+signal sig2_rlm : std_logic_vector ( 7 downto 0 );  --<------------ OBS£U¯YÆ
+-------------------------------------
+-- sygna³y RDM
+-------------------------------------
+signal sig1_a_rdm, sig1_b_rdm, sig1_c_rdm, sig1_d_rdm : std_logic_vector ( 7 downto 0 );
+signal sig2_a_rdm, sig2_b_rdm, sig2_c_rdm, sig2_d_rdm : std_logic_vector ( 15 downto 0 );
+
+-------------------------------------
+-- sygna³y DATA
+-------------------------------------
+signal sig1_a_data, sig1_b_data, sig1_c_data, sig1_d_data : std_logic_vector ( 7 downto 0 );		--sygna³y wejœcia do ramu
+signal sig2_a_data, sig2_b_data, sig2_c_data, sig2_d_data : std_logic_vector ( 7 downto 0 );		-- sygna³y wyjœcia z ramu
+
+
+-------------------------------------
+-------------------------------------
+-- sygna³y CRC
+-------------------------------------
+signal sig1_a_crc, sig1_b_crc, sig1_c_crc, sig1_d_crc : std_logic_vector ( 7 downto 0 );
+signal sig2_a_crc, sig2_b_crc, sig2_c_crc, sig2_d_crc : std_logic_vector ( 15 downto 0 );
+
+
+-------------------------------------
+-- do obslugi licznika adresow
+-------------------------------------
+signal addr_cnt_reg, addr_cnt_next : std_logic_vector ( 9 downto 0);
+signal addr_cnt_clr : std_logic; 
+signal addr_flow_cnt_clr : std_logic;
+
 
 -----------------------------------
 -- UBER mega flow control bit2bit
 -----------------------------------
-
 
 component flowcontrol
 
@@ -92,8 +147,13 @@ component flowcontrol
 		enable_MODdmux2 : out std_logic_vector ( 0 downto 0 );	
 		enable_MODdmux3 : out std_logic_vector ( 0 downto 0 );	
 		ena_RLM, ena_RDM0, ena_RDM1, ena_RDM2, ena_RDM3, ena_CRC0, ena_CRC1, ena_CRC2, ena_CRC3, wen_DATA0, wen_DATA1, wen_DATA2, wen_DATA3 : out std_logic;
-		addr_cnt_clr : out std_logic;
-		mod_pass 	: out std_logic;
+		addr_flow_cnt_clr : out std_logic;
+
+		
+		mod_pass0	: out std_logic;
+		mod_pass1	: out std_logic;
+		mod_pass2	: out std_logic;
+		mod_pass3	: out std_logic;
 		mod_passed0 : out std_logic_vector ( 1 downto 0 );
 		mod_passed1 : out std_logic_vector ( 1 downto 0 );
 		mod_passed2 : out std_logic_vector ( 1 downto 0 );
@@ -191,81 +251,32 @@ component reg8it_to16bit	----rejestr CRC
 	);
 end component;
 
-signal ml_reg : std_logic_vector ( 15 downto 0 );
-signal enaRLM, enaRDM0, enaRDM1, enaRDM2, enaRDM3, enCRC0, enCRC1, enCRC2, enCRC3, wenDATA0, wenDATA1, wenDATA2, wenDATA3 : std_logic;
-signal enaCRC0, enaCRC1, enaCRC2, enaCRC3 : std_logic;
-signal enable_RDMdmux, enable_RDMmux, enable_PACKdmux : std_logic_vector ( 1 downto 0 );
-signal enable_MAINdmux, enable_HEADdmux, enable_MODdmux0, enable_MODdmux1, enable_MODdmux2, enable_MODdmux3 : std_logic_vector ( 0 downto 0 );
--------------------------------------
--- sygna³y DATA
--------------------------------------
-signal sig0_main, sig1_main : std_logic_vector (7 downto 0 );
-
--------------------------------------
---sygna³y HEAD 
--------------------------------------
-signal sig0_head, sig1_head : std_logic_vector ( 7 downto 0 );
-
--------------------------------------
---sygna³y PACK
--------------------------------------
-signal sig00_pack, sig01_pack, sig10_pack, sig11_pack : std_logic_vector ( 7 downto 0 );
-
--------------------------------------
---sygna³y RLM
--------------------------------------
-signal sig2_rlm : std_logic_vector ( 7 downto 0 );  --<------------ OBS£U¯YÆ
--------------------------------------
--- sygna³y RDM
--------------------------------------
-signal sig1_a_rdm, sig1_b_rdm, sig1_c_rdm, sig1_d_rdm : std_logic_vector ( 7 downto 0 );
-signal sig2_a_rdm, sig2_b_rdm, sig2_c_rdm, sig2_d_rdm : std_logic_vector ( 15 downto 0 );
-
--------------------------------------
--- sygna³y DATA
--------------------------------------
-signal sig1_a_data, sig1_b_data, sig1_c_data, sig1_d_data : std_logic_vector ( 7 downto 0 );		--sygna³y wejœcia do ramu
-signal sig2_a_data, sig2_b_data, sig2_c_data, sig2_d_data : std_logic_vector ( 7 downto 0 );		-- sygna³y wyjœcia z ramu
-
-----------------------------------
--- kodowanie wrena
-----------------------------------
-signal wrenDATA0, wrenDATA1, wrenDATA2, wrenDATA3 : std_logic;
-signal wren_DATA0, wren_DATA1, wren_DATA2, wren_DATA3 : std_logic_vector ( 1 downto 0 );
-
--------------------------------------
--------------------------------------
--- sygna³y CRC
--------------------------------------
-signal sig1_a_crc, sig1_b_crc, sig1_c_crc, sig1_d_crc : std_logic_vector ( 7 downto 0 );
-signal sig2_a_crc, sig2_b_crc, sig2_c_crc, sig2_d_crc : std_logic_vector ( 15 downto 0 );
-
-
--------------------------------------
--- do obslugi licznika adresow
--------------------------------------
-signal address  : std_logic_vector ( 9 downto 0);
-signal addr_cnt_next : std_logic_vector ( 9 downto 0 );
-signal addr_cnt_clr : std_logic; 
 
 ----------------------------------------------
 ------------------------------------------------- BEGIN
 ----------------------------------------------
 begin
 -- Opis dzialania licznika adresow
+
 	process (clk, rst)
 	begin
-		if rst = '0' then
-			address <= (others => '0');	
+		if rst = '1'  then
+			addr_cnt_reg <= ( others => '0' );
 		elsif rising_edge(clk) then
-			address <= addr_cnt_next;
+			addr_cnt_reg <=addr_cnt_next;
 		end if;
 	end process;
-	
-	-- Sposob liczenia
-	addr_cnt_next <= 	(others => '0') 	when (addr_cnt_clr = '1') OR (addr_calc_cnt_clr = '1') else
-							address + 1;
 
+	process (addr_cnt_reg, addr_flow_cnt_clr, addr_calc_cnt_clr)
+	begin
+		if (addr_flow_cnt_clr = '1') OR (addr_calc_cnt_clr = '1') then
+
+			addr_cnt_next <= ( others => '0' );
+		else
+			 addr_cnt_next <= addr_cnt_reg + "1";
+		end if;
+	end process;			  
+	
 
 
 -------------------------------------
@@ -293,16 +304,20 @@ begin
 		ena_RDM1	=> enaRDM1, 
 		ena_RDM2	=> enaRDM2, 
 		ena_RDM3	=> enaRDM3, 
-		ena_CRC0	=> enCRC0, 
-		ena_CRC1	=> enCRC1, 
-		ena_CRC2	=> enCRC2, 
-		ena_CRC3	=> enCRC3, 
-		wen_DATA0   => wenDATA0, 
-		wen_DATA1	=> wenDATA1, 
-		wen_DATA2	=> wenDATA2, 
-		wen_DATA3	=> wenDATA3,
-		addr_cnt_clr => addr_cnt_clr,
-		mod_pass => mod_pass,
+		ena_CRC0	=> enaCRC0, 
+		ena_CRC1	=> enaCRC1, 
+		ena_CRC2	=> enaCRC2, 
+		ena_CRC3	=> enaCRC3, 
+		wen_DATA0   => wrenDATA0, 
+		wen_DATA1	=> wrenDATA1, 
+		wen_DATA2	=> wrenDATA2, 
+		wen_DATA3	=> wrenDATA3,
+		addr_flow_cnt_clr => addr_flow_cnt_clr,
+
+		mod_pass0 => mod_pass0,
+		mod_pass1 => mod_pass1,
+		mod_pass2 => mod_pass2,
+		mod_pass3 => mod_pass3,
 		mod_passed0 => mod_passed0,
 		mod_passed1 => mod_passed1,
 		mod_passed2 => mod_passed2,
@@ -382,26 +397,6 @@ dmux_pack : dmux4x8
 -------- mux crc ---------------------
 --------------------------------------
 
---------------------------------
--------- enable do rejestrow crc
---------------------------------
-process (trans_mod, enCRC0, enCRC1, enCRC2, enCRC3)
-begin
-enaCRC0 <= enCRC0;
-enaCRC1 <= enCRC1;
-enaCRC2 <= enCRC2;
-enaCRC3 <= enCRC3;
-	case trans_mod is
-		when "00" =>
-			enaCRC0 <= '1';
-		when "01" =>
-			enaCRC1 <= '1';
-		when "10" =>
-			enaCRC2 <= '1';
-		when "11" =>
-			enaCRC3 <= '1';
-	end case;
-end process;
 -----------------------------
 --------rejestry crc 16bit --
 -----------------------------
@@ -473,35 +468,12 @@ end process;
 --------ram data --------------------
 -------------------------------------
 
-
-
-wren_DATA0 <= ren_DATA0 & wenDATA0;
-wren_DATA1 <= ren_DATA1 & wenDATA1;
-wren_DATA2 <= ren_DATA2 & wenDATA2;
-wren_DATA3 <= ren_DATA3 & wenDATA3;
-
-with wren_DATA0 select
-		wrenDATA0 <= '0' when "01",
-				  '1' when "10",
-				  '1' when others;
-with wren_DATA1 select
-		wrenDATA1 <= '0' when "01",
-				  '1' when "10",
-				  '1' when others;
-with wren_DATA2 select
-		wrenDATA2 <= '0' when "01",
-				  '1' when "10",
-				  '1' when others;
-with wren_DATA3 select
-		wrenDATA3 <= '0' when "01",
-				  '1' when "10",
-				  '1' when others;
 				  
 	ram_data0 : ram
 		PORT MAP (
 		wren => wrenDATA0,	
 		clock => clk,	
-		address =>  address, 
+		address =>  addr_cnt_reg, 
 		data => sig1_a_data,
 		q => sig2_a_data		-- wyjœcie
 	);
@@ -510,7 +482,7 @@ with wren_DATA3 select
 		PORT MAP (
 		wren => wrenDATA1,	
 		clock => clk,	
-		address => address, 
+		address => addr_cnt_reg, 
 		data => sig1_b_data,
 		q => sig2_b_data		-- wyjœcie
 	);
@@ -519,7 +491,7 @@ with wren_DATA3 select
 		PORT MAP (
 		wren => wrenDATA2,	
 		clock => clk,	
-		address => address, 
+		address => addr_cnt_reg, 
 		data => sig1_c_data,
 		q => sig2_c_data		-- wyjœcie
 	);
@@ -528,7 +500,7 @@ with wren_DATA3 select
 		PORT MAP (
 		wren => wrenDATA3,	
 		clock => clk,	
-		address => address, 
+		address => addr_cnt_reg, 
 		data => sig1_d_data,
 		q => sig2_d_data		-- wyjœcie
 	);
@@ -597,7 +569,7 @@ with wren_DATA3 select
 			q => sig2_d_rdm
 		);
 -------------------------------------
--- rejestr RLM 8bit <--------------------------Zrezygnowaæ z tego, lub zmieniæ automat...
+-- rejestr RLM 8bit 
 -------------------------------------
 	rlm_0 : reg8
 				port map ( 
@@ -607,6 +579,6 @@ with wren_DATA3 select
 			d => sig0_head,
 			q => mod_count
 		);
-		
+
 
 end data_flow;

@@ -55,8 +55,13 @@ entity flowcontrol is
 		enable_MODdmux3 : out std_logic_vector ( 0 downto 0 );	
 		
 		ena_RLM, ena_RDM0, ena_RDM1, ena_RDM2, ena_RDM3, ena_CRC0, ena_CRC1, ena_CRC2, ena_CRC3, wen_DATA0, wen_DATA1, wen_DATA2, wen_DATA3 : out std_logic;
-		addr_cnt_clr : out std_logic;
-		mod_pass	: out std_logic;
+		
+		addr_flow_cnt_clr : out std_logic;
+		
+		mod_pass0	: out std_logic;
+		mod_pass1	: out std_logic;
+		mod_pass2	: out std_logic;
+		mod_pass3	: out std_logic;
 		mod_passed0 : out std_logic_vector ( 1 downto 0 );
 		mod_passed1 : out std_logic_vector ( 1 downto 0 );
 		mod_passed2 : out std_logic_vector ( 1 downto 0 );
@@ -101,9 +106,6 @@ signal flow_reset, count_start : std_logic;
 -- Licznik jako rejestr - sygna³y
 signal cnt_reg, cnt_next : std_logic_vector ( 10 downto 0 );	
 
---signal mod_passed0_reg, mod_passed1_reg, mod_passed2_reg, mod_passed3_reg : std_logic_vector ( 1 downto 0 );
---signal mod_passed0_next, mod_passed1_next, mod_passed2_next, mod_passed3_next : std_logic_vector ( 1 downto 0 );
-
 begin
 -- Licznik jako rejestr 11bit 
 	process (clk, rst)
@@ -130,7 +132,7 @@ begin
 --------------------------------------------------------------
 process (clk, rst)
 	begin
-		if rst = '0' then
+		if rst = '1' then
 			flow_fsm_reg <= flow_idle;	
 		elsif rising_edge(clk) then
 			flow_fsm_reg <= flow_fsm_next;
@@ -148,8 +150,8 @@ process(flow_fsm_reg, flow_in, cnt_reg, data)
 				if flow_in = '0' then 		
 					flow_fsm_next <= flow_idle;				
 				else 
-					count_start <= '1';
 					if data = "00000010" then
+						count_start <= '1';
 						flow_fsm_next <= flow_sop;
 					else
 						flow_reset <= '1';
@@ -199,21 +201,21 @@ process(flow_fsm_reg, flow_in, cnt_reg, data)
 				
 			when flow_header_rdm3 =>
 				if cnt_reg = 1 then --80bit
-					if data = "00000110" then
-						count_start <= '1';
-						flow_fsm_next <= flow_eoh;
-					else
-							flow_reset <= '1';
-							flow_fsm_next <= flow_idle;
-					end if;
+					count_start <= '1';
+					flow_fsm_next <= flow_eoh;
 				else 
 					flow_fsm_next <= flow_header_rdm3;
 				end if; 	
 				
 			when flow_eoh =>
 				if cnt_reg = 0 then --88bit
-					count_start <= '1';
-					flow_fsm_next <= flow_crc0;	
+					if data = "00000110" then
+						count_start <= '1';
+						flow_fsm_next <= flow_crc0;	
+					else
+							flow_reset <= '1';
+							flow_fsm_next <= flow_idle;
+					end if;
 				else 
 					flow_fsm_next <= flow_eoh;
 				end if; 	
@@ -261,10 +263,11 @@ process(flow_fsm_reg, flow_in, cnt_reg, data)
 				end if; 	
 				
 			when flow_eom1 =>
+					count_start <= '1';
 					flow_fsm_next <= flow_crc2;
 					
 			when flow_crc2 =>
-				if cnt_reg = 2 then --16520bit
+				if cnt_reg = 1 then --16520bit
 					count_start <= '1';
 					flow_fsm_next <= flow_data2;
 				else 
@@ -273,7 +276,6 @@ process(flow_fsm_reg, flow_in, cnt_reg, data)
 				
 			when flow_data2 =>
 				if data = "00000011" then		
-					count_start <= '1';
 					flow_fsm_next <= flow_eom2;
 				else 
 					if cnt_reg = 1024 then --24712bit
@@ -284,10 +286,11 @@ process(flow_fsm_reg, flow_in, cnt_reg, data)
 				end if; 	
 				
 			when flow_eom2 =>
+					count_start <= '1';
 					flow_fsm_next <= flow_crc3;
 					
 			when flow_crc3 =>
-				if cnt_reg = 2 then --24728bit
+				if cnt_reg = 1 then --24728bit
 					count_start <= '1';
 					flow_fsm_next <= flow_data3;
 				else 
@@ -306,11 +309,12 @@ process(flow_fsm_reg, flow_in, cnt_reg, data)
 				end if; 	
 				
 			when flow_eom3 =>
-					flow_fsm_next <= flow_eop;
-			when flow_eop =>
-			
-				if cnt_reg = 2 then --32936bit 
 					count_start <= '1';
+					flow_fsm_next <= flow_eop;
+					
+			when flow_eop =>
+				count_start <= '1';
+				if data = "00000100" then --32936bit 
 					flow_fsm_next <= flow_idle;
 				else 
 					flow_fsm_next <= flow_eop;
@@ -346,9 +350,12 @@ process(flow_fsm_reg, flow_in, cnt_reg, data)
 			wen_DATA2 <= '0';
 			wen_DATA3 <= '0';
 			
-			addr_cnt_clr  <= '1';
+			addr_flow_cnt_clr <= '0';
 			
-			mod_pass <= '0';
+			mod_pass0 <= '0';
+			mod_pass1 <= '0';
+			mod_pass2 <= '0';
+			mod_pass3 <= '0';
 			mod_passed0 <= "00";
 			mod_passed1 <= "00";
 			mod_passed2 <= "00";
@@ -359,7 +366,7 @@ process(flow_fsm_reg, flow_in, cnt_reg, data)
 			when flow_idle => 
 					
 			when flow_sop => 
-
+					addr_flow_cnt_clr <= '1';
 			when flow_header_rlm => 
 					enable_MAINdmux <= "0";
 					ena_RLM <= '1';
@@ -394,19 +401,20 @@ process(flow_fsm_reg, flow_in, cnt_reg, data)
 					enable_MAINdmux <= "1";
 					enable_PACKdmux <= "00";
 					enable_MODdmux0 <= "0";
-					ena_CRC0 <= '1';			
+					ena_CRC0 <= '1';	
+					addr_flow_cnt_clr <= '1';		
 
 			when flow_data0 => 
 					enable_MAINdmux <= "1";
 					enable_PACKdmux <= "00";
 					enable_MODdmux0 <= "1";
 					wen_DATA0 <= '1';
-					addr_cnt_clr  <= '0';
 								
 			when flow_eom0 =>
 					enable_RDMmux <= "00";
-					mod_pass <= '1';
-					if ml_reg = ( cnt_reg + "1") then
+					mod_pass0 <= '1';
+					
+					if ml_reg = cnt_reg  then
 						mod_passed0 <= "11";
 					else
 						mod_passed0 <= "10";
@@ -417,17 +425,19 @@ process(flow_fsm_reg, flow_in, cnt_reg, data)
 					enable_PACKdmux <= "01";
 					enable_MODdmux1 <= "0";
 					ena_CRC1 <= '1';
+					addr_flow_cnt_clr <= '1';
 					
 			when flow_data1 => 
 					enable_MAINdmux <= "1";
 					enable_PACKdmux <= "01";
 					enable_MODdmux1 <= "1";	
 					wen_DATA1 <= '1';
-					addr_cnt_clr  <= '0';
+					
 					
 			when flow_eom1 =>
 					enable_RDMmux <= "01";
-					mod_pass <= '1';
+					mod_pass1 <= '1';
+				
 					if ml_reg = cnt_reg then
 						mod_passed1 <= "11";
 					else
@@ -439,18 +449,20 @@ process(flow_fsm_reg, flow_in, cnt_reg, data)
 					enable_PACKdmux <= "10";
 					enable_MODdmux2 <= "0";
 					ena_CRC2 <= '1';
+					addr_flow_cnt_clr <= '1';
 					
 			when flow_data2 => 
 					enable_MAINdmux <= "1";
 					enable_PACKdmux <= "10";
 					enable_MODdmux2 <= "1";	
 					wen_DATA2 <= '1';
-					addr_cnt_clr  <= '0';
+				
 
 					
 			when flow_eom2 =>
 					enable_RDMmux <= "10";
-					mod_pass <= '1';
+					mod_pass2 <= '1';
+				
 					if ml_reg = cnt_reg then
 						mod_passed2 <= "11";
 					else
@@ -463,17 +475,19 @@ process(flow_fsm_reg, flow_in, cnt_reg, data)
 					enable_PACKdmux <= "11";
 					enable_MODdmux3 <= "0";
 					ena_CRC3 <= '1';
+					addr_flow_cnt_clr <= '1';
 					
 			when flow_data3 => 
 					enable_MAINdmux <= "1";
 					enable_PACKdmux <= "11";
 					enable_MODdmux3 <= "1";	
 					wen_DATA3 <= '1';
-					addr_cnt_clr  <= '0';	
+
 					
 			when flow_eom3 =>
 					enable_RDMmux <= "11";
-					mod_pass <= '1';
+					mod_pass3 <= '1';
+
 					if ml_reg = cnt_reg then
 						mod_passed3 <= "11";
 					else

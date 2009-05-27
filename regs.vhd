@@ -212,7 +212,7 @@ begin
 	q_16next <= q_8reg when ena = '1' else
 			q_16reg;
 	
-	q <= (q_8reg & q_16reg);
+	q <= (q_16reg & q_8reg);
 end data_flow;
 
 

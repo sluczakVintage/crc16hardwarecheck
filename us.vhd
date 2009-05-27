@@ -27,7 +27,11 @@ entity us is
 		bufout_done : in std_logic;
 		
 		mod_count	: in std_logic_vector ( 7 downto 0 );
-		mod_pass	: in std_logic;
+		mod_pass0	: in std_logic;
+		mod_pass1	: in std_logic;
+		mod_pass2	: in std_logic;
+		mod_pass3	: in std_logic;
+		
 		mod_passed0 : in std_logic_vector ( 1 downto 0 );
 		mod_passed1 : in std_logic_vector ( 1 downto 0 );
 		mod_passed2 : in std_logic_vector ( 1 downto 0 );
@@ -77,12 +81,6 @@ signal proc_fsb_reg, proc_fsb_next	: PROC_FSM_STATE_TYPE;
 
 signal mod_passed0_reg, mod_passed1_reg, mod_passed2_reg, mod_passed3_reg : std_logic_vector ( 1 downto 0 );
 
---type COMP_FSM_STATE_TYPE is (
---	comp_fsb_idle,
---	comp_fsb_compare,
---	comp_fsb_processed
---	);
---signal comp_fsb_reg, comp_fsb_next	: COMP_FSM_STATE_TYPE;
 
 
 signal flow, start_processing, send_bufout : std_logic;
@@ -95,41 +93,45 @@ begin
 
 
 
-	process(clk, rst, mod_pass)
+	process(clk, rst, mod_pass0)
 	begin
 		if(rst='1') then
 			mod_passed0_reg <= (others => '0');
-		elsif (rising_edge(clk) AND mod_pass = '1') then
+		elsif (rising_edge(clk) AND mod_pass0 = '1') then
 			mod_passed0_reg  <= mod_passed0;
 		end if;
 	end process;
 	
-	process(clk, rst)
+	
+	process(clk, rst, mod_pass1)
 	begin
 		if(rst='1') then
 			mod_passed1_reg <= (others => '0');
-		elsif rising_edge(clk) then
+		elsif (rising_edge(clk) AND mod_pass1 = '1') then
 			mod_passed1_reg  <= mod_passed1;
 		end if;
 	end process;
 	
-	process(clk, rst)
+	
+	process(clk, rst, mod_pass2)
 	begin
 		if(rst='1') then
 			mod_passed2_reg <= (others => '0');
-		elsif rising_edge(clk) then
+		elsif (rising_edge(clk) AND mod_pass2 = '1') then
 			mod_passed2_reg  <= mod_passed2;
 		end if;
 	end process;
 	
-	process(clk, rst)
+	
+	process(clk, rst, mod_pass3)
 	begin
 		if(rst='1') then
 			mod_passed3_reg <= (others => '0');
-		elsif rising_edge(clk) then
+		elsif (rising_edge(clk) AND mod_pass3 = '1') then
 			mod_passed3_reg  <= mod_passed3;
 		end if;
 	end process;
+
 
 -- Opis dzialania automatu glownego
 	process (clk, rst)
@@ -145,9 +147,9 @@ begin
 process (main_fsb_reg, mod_processed, data_incoming, mod_count, mod_passed0_reg, mod_passed1_reg, mod_passed2_reg, mod_passed3_reg)
 begin
 	start_processing <= '0';
-	flow <= '0';
-	send_bufout <= '0';
-	mod_trans <= "00";
+	flow_in <= '0';
+	bufout_send <= '0';
+	trans_mod <= "00";
 	status_0bit <= '0';
 	
 	case main_fsb_reg is
@@ -157,10 +159,9 @@ begin
 				main_fsb_next <= main_fsb_idle;
 			else
 				main_fsb_next <= main_fsb_receive;
-				flow <= '1'; -- zacznij przeplyw
+				flow_in <= '1'; -- zacznij przeplyw
 			end if;
 			
-------------------------------------------------------------------------------------------
 		when main_fsb_receive => -- jesli dane z pierwszego pakietu juz zostaly odebrane, zacznij je przetwarzac
 			if mod_passed0_reg = "11" then
 				status_0bit <= '1';
@@ -169,6 +170,7 @@ begin
 				status_0bit <= '0';
 				main_fsb_next <= main_fsb_busy0;
 			else
+				flow_in <= '1';
 				main_fsb_next <= main_fsb_receive;
 			end if;
 			
@@ -180,7 +182,7 @@ begin
 					main_fsb_next <= main_fsb_busy0;
 				end if;
 			else
-				mod_trans <= "00";
+				trans_mod <= "00";
 				start_processing <= '1'; -- zacznij przetwarzanie
 				main_fsb_next <= main_fsb_proc0;
 			end if;
@@ -204,7 +206,7 @@ begin
 					main_fsb_next <= main_fsb_busy1;
 				end if;
 			else
-				mod_trans <= "01";
+				trans_mod <= "01";
 				start_processing <= '1'; -- zacznij przetwarzanie
 				main_fsb_next <= main_fsb_proc1;
 			end if;
@@ -228,7 +230,7 @@ begin
 					main_fsb_next <= main_fsb_busy2;
 				end if;
 			else
-				mod_trans <= "10";
+				trans_mod <= "10";
 				start_processing <= '1'; -- zacznij przetwarzanie
 				main_fsb_next <= main_fsb_proc2;
 			end if;
@@ -248,14 +250,14 @@ begin
 			if mod_processed = '1' then
 				main_fsb_next <= main_fsb_send;
 			else
-				mod_trans <= "11";
+				trans_mod <= "11";
 				start_processing <= '1'; -- zacznij przetwarzanie
 				main_fsb_next <= main_fsb_proc3;
 			end if;
 			
 		when main_fsb_send => -- jesli buforout gotowy, rozpocznij wysylanie
 				main_fsb_next <= main_fsb_idle;
-				send_bufout <= '1'; -- zacznij przesylanie
+				bufout_send <= '1'; -- zacznij przesylanie
 	end case;
 end process;
 
@@ -272,8 +274,8 @@ end process;
 		
 	process (proc_fsb_reg, start_processing, calc_done, bufout_done, equal_crc, status_0bit)
 	begin
-	start_calc <= '0';
-	start_trans <= '0';
+	calc_start <= '0';
+	bufout_trans <= '0';
 	mod_processed <= '0';
 	status_1bit <= '0';
 	
@@ -285,7 +287,7 @@ end process;
 					proc_fsb_next <= proc_fsb_transmit;
 				else						-- jesli jest rozkaz zacznij przetwarzac
 					proc_fsb_next <= proc_fsb_calc;
-					start_calc <= '1'; 
+					calc_start <= '1'; 
 				end if;
 				
 			when proc_fsb_calc =>			-- przelicz CRC modulu
@@ -302,7 +304,7 @@ end process;
 			when proc_fsb_transmit =>
 				if bufout_done = '0' then
 					proc_fsb_next <= proc_fsb_transmit;
-					start_trans <= '1';
+					bufout_trans <= '1';
 				else
 					proc_fsb_next <= proc_fsb_idle;
 					mod_processed <= '1';
@@ -310,6 +312,9 @@ end process;
 			end case;
 
 	end process;
+
+
+-----------------
 
 	process (clk, rst)
 	begin
@@ -329,11 +334,15 @@ end process;
 		end if;
 	end process;
 
-flow_in <= flow;
+	process (clk, rst)
+	begin
+		if rst = '1' then
+			status_index <= "00";	
+		elsif rising_edge(clk) then
+			status_index <= ( status_0bit_reg & status_1bit_reg );
+		end if;
+	end process;
 
-status_index <= ( status_0bit_reg & status_1bit_reg );
-trans_mod <= mod_trans;
-bufout_send <= send_bufout;
-calc_start	<= start_calc;
-bufout_trans <= start_trans;
+
+
 end rtl;

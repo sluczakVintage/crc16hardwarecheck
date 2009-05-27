@@ -53,14 +53,15 @@ architecture structure of CRCcheck is
 	signal CRC2_index : std_logic_vector ( 15 downto 0 );
 	
 	signal addr_cal_cnt_clr : std_logic;
+	signal addr_cal_cnt_ena : std_logic;
 	signal ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : std_logic;
 	signal mux_DATA : std_logic_vector ( 1 downto 0 );
 	signal calc_done, bufout_ready, bufout_done : std_logic;	
 	
 	signal mod_count : std_logic_vector ( 7 downto 0 );
-	signal mod_pass : std_logic;
+	signal mod_pass0, mod_pass1, mod_pass2, mod_pass3 : std_logic;
 	signal mod_passed0, mod_passed1, mod_passed2, mod_passed3 : std_logic_vector ( 1 downto 0 );
-	signal flow_in, calc_start, bufout_trans, bufout_send, transmit_end : std_logic; ---<<<<< TRANSMIT END
+	signal flow_in, calc_start, bufout_trans, bufout_send : std_logic;
 	signal trans_mod : std_logic_vector ( 1 downto 0 );
 	
 	-- US
@@ -78,7 +79,10 @@ component us
 		bufout_done : in std_logic;
 		
 		mod_count	: in std_logic_vector ( 7 downto 0 );
-		mod_pass	: in std_logic;
+		mod_pass0	: in std_logic;
+		mod_pass1	: in std_logic;
+		mod_pass2	: in std_logic;
+		mod_pass3	: in std_logic;
 		mod_passed0 : in std_logic_vector ( 1 downto 0 );
 		mod_passed1 : in std_logic_vector ( 1 downto 0 );
 		mod_passed2 : in std_logic_vector ( 1 downto 0 );
@@ -109,20 +113,21 @@ component buforin
 		flow_in : in std_logic; 
 		
 		-- sygnaly z crccalc oczekuj¹ce na odczyt z RAM DATA 
-		ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : in std_logic;
+	--	ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : in std_logic;
 		-- mux wybierajacy sygnal do odczytu
 		muxDATA : in std_logic_vector ( 1 downto 0 ); 
 		--zewnetrzny clr licznika adresow
-		addr_calc_cnt_clr : in std_logic;
-		
-		
+		addr_calc_cnt_clr : in std_logic;		
 			--OUTPUTS
 	--	usb_endread : out std_logic;
 		data_index : out std_logic_vector ( 7 downto 0 );
 		CRC_index : out std_logic_vector ( 15 downto 0 );
 		
 		mod_count	: out std_logic_vector ( 7 downto 0 );
-		mod_pass	: out std_logic;
+		mod_pass0	: out std_logic;
+		mod_pass1	: out std_logic;
+		mod_pass2	: out std_logic;
+		mod_pass3	: out std_logic;
 		mod_passed0 : out std_logic_vector ( 1 downto 0 );
 		mod_passed1 : out std_logic_vector ( 1 downto 0 );
 		mod_passed2 : out std_logic_vector ( 1 downto 0 );
@@ -144,7 +149,7 @@ component crccalc
 		calc_done	: out std_logic;
 		crc2_index : out std_logic_vector (15 downto 0 );
 		addr_calc_cnt_clr : out std_logic;
-		ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : out std_logic;
+	--	ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : out std_logic;
 		muxDATA : out std_logic_vector ( 1 downto 0 )
 		
 	);
@@ -189,7 +194,10 @@ begin
 			equal_crc => equal_crc,
 			bufout_done => bufout_done,
 			mod_count => mod_count,
-			mod_pass => mod_pass,
+			mod_pass0 => mod_pass0,
+			mod_pass1 => mod_pass1,
+			mod_pass2 => mod_pass2,
+			mod_pass3 => mod_pass3,
 			mod_passed0 => mod_passed0,
 			mod_passed1 => mod_passed1,
 			mod_passed2 => mod_passed2,
@@ -213,14 +221,19 @@ begin
 			data_index => data_index,
 			CRC_index => CRC_index,
 			addr_calc_cnt_clr => addr_cal_cnt_clr,
-			ren_DATA0 => ren_DATA0, 
-			ren_DATA1 => ren_DATA1, 
-			ren_DATA2 => ren_DATA2, 
-			ren_DATA3 => ren_DATA3, 
+			
+		--	ren_DATA0 => ren_DATA0, 
+		--	ren_DATA1 => ren_DATA1, 
+		--	ren_DATA2 => ren_DATA2, 
+		--	ren_DATA3 => ren_DATA3, 
 			muxDATA => mux_DATA,
 			
 			mod_count => mod_count,
-			mod_pass => mod_pass,
+			
+			mod_pass0 => mod_pass0,
+			mod_pass1 => mod_pass1,
+			mod_pass2 => mod_pass2,
+			mod_pass3 => mod_pass3,
 			mod_passed0 => mod_passed0,
 			mod_passed1 => mod_passed1,
 			mod_passed2 => mod_passed2,
@@ -238,10 +251,10 @@ begin
 			addr_calc_cnt_clr => addr_cal_cnt_clr,
 			calc_done => calc_done,
 			crc2_index => crc2_index,
-			ren_DATA0 => ren_DATA0, 
-			ren_DATA1 => ren_DATA1, 
-			ren_DATA2 => ren_DATA2 , 
-			ren_DATA3 => ren_DATA3, 
+		--	ren_DATA0 => ren_DATA0, 
+		--	ren_DATA1 => ren_DATA1, 
+		--	ren_DATA2 => ren_DATA2 , 
+		--	ren_DATA3 => ren_DATA3, 
 			muxDATA => mux_DATA
 			
 		);

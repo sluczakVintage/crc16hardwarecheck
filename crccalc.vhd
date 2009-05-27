@@ -37,7 +37,8 @@ entity crccalc is
 		calc_done	: out std_logic;
 		crc2_index : out std_logic_vector (15 downto 0 );
 		addr_calc_cnt_clr : out std_logic;
-		ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : out std_logic;
+		addr_calc_cnt_ena : out std_logic;
+	--	ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : out std_logic;
 		muxDATA : out std_logic_vector ( 1 downto 0 )
 		
 		
@@ -51,15 +52,11 @@ architecture behavior of crccalc is
 
 
 --sygnaly informujace o stanie kalkulatora
-signal done_calc, wait_forCRC : std_logic;
+signal wait_forCRC, done_calc : std_logic;
 --sygnaly zawierajace wartosci CRC w roznych fazach
-signal nextCRC, newCRC, index_crc2 : std_logic_vector( 15 downto 0 ) := "0000000000000000";
+signal nextCRC, newCRC : std_logic_vector( 15 downto 0 ) := "0000000000000000";
 --sygnal zawierajacy dane do przetworzenia w celu unikniecia liczenia CRC dla wartosci konca modulu -->>>MOZNA POTEM ZMIENIC NA ustawianie ren'ow na '0'
 signal data_to_process : std_logic_vector ( 7 downto 0 ) := "00000000";
---sygnal resetowania licznika adresow
-signal addr_cnt_clr : std_logic;
---sygnaly READ dla RAMu
-signal renDATA0, renDATA1, renDATA2, renDATA3 : std_logic;
 
 --Maszyna stanow odpowiedzialna za liczenie CRC
 type CALC_FSM_STATE_TYPE is (
@@ -121,14 +118,14 @@ begin
 	
 	process (calc_fsb_reg, calc_start, data_index, trans_mod, cnt_reg)
 	begin
+	
 		data_to_process <= data_index;
-		
 		done_calc <= '0';
-		renDATA0 <= '0';
-		renDATA1 <= '0';
-		renDATA2 <= '0';
-		renDATA3 <= '0';
-		addr_cnt_clr  <= '1';
+	--	ren_DATA0 <= '0';
+	--	ren_DATA1 <= '0';
+	--	ren_DATA2 <= '0';
+	--	ren_DATA3 <= '0';
+		addr_calc_cnt_clr  <= '0';
 		muxDATA <= (others => '0');
 		
 		wait_forCRC <= '0';
@@ -142,32 +139,30 @@ begin
 				end if;
 
 			when calc_fsb_calculate =>
+						addr_calc_cnt_ena <= '1';
 						if trans_mod  = "00" then
-							addr_cnt_clr  <= '0';
-							renDATA0 <= '1';
+						--	ren_DATA0 <= '1';
 							muxDATA <= "00";
 						elsif trans_mod  = "01" then
-							addr_cnt_clr  <= '0';
-							renDATA1 <= '1';
+						--	ren_DATA1 <= '1';
 							muxDATA <= "01";
 						elsif trans_mod  = "10" then			
-							addr_cnt_clr  <= '0';
-							renDATA2 <= '1';
+						--	ren_DATA2 <= '1';
 							muxDATA <= "10";
 						elsif trans_mod  = "11" then
-							addr_cnt_clr  <= '0';
-							renDATA3 <= '1';
+						--	ren_DATA3 <= '1';
 							muxDATA <= "11";
 						else 
 							calc_fsb_next <= calc_fsb_idle;
 						end if;	
-				if data_index = "00000011" then  
-					data_to_process <= ( others => '0' );
-					calc_fsb_next <= calc_fsb_store;
-				else
-					calc_fsb_next <= calc_fsb_calculate;
-				end if;
-				
+						
+						if data_index = "00000011" then  
+							data_to_process <= ( others => '0' );
+							calc_fsb_next <= calc_fsb_store;
+						else
+							calc_fsb_next <= calc_fsb_calculate;
+						end if;
+					
 			when calc_fsb_store =>
 				wait_forCRC <= '1';
 				data_to_process <= ( others => '0' );
@@ -178,12 +173,15 @@ begin
 				end if;
 				
 			when calc_fsb_processed =>
+				addr_calc_cnt_clr <= '1';
 				data_to_process <= ( others => '0' );
 				done_calc <= '1';
 				calc_fsb_next <= calc_fsb_idle;
 		end case;
 	end process;
 
+
+------Liczenie CRC ------------
 	process (clk, rst)
 		begin
 			if (rst = '1') then
@@ -211,16 +209,9 @@ begin
 				rst => rst,
 				ena => done_calc,
 				d => newCRC,
-				q => index_crc2
+				q => crc2_index
 	);
 
 
-	calc_done <= done_calc;
-	crc2_index <= index_crc2;
-
-	addr_calc_cnt_clr <= addr_cnt_clr;
-	ren_DATA0 <= renDATA0;
-	ren_DATA1 <= renDATA1;
-	ren_DATA2 <= renDATA2;
-	ren_DATA3 <= renDATA3;
+calc_done <= done_calc;
 end behavior;
