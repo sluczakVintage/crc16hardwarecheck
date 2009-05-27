@@ -19,24 +19,18 @@ entity CRCcheck is
 	
 	port
 	(
-		-- Input ports
+-- Input
 			-- clock signal
 		clk : in  std_logic ;
 			-- synchronous reset signal
 		rst : in  std_logic;
 			-- read aproval signal
-		usb_rxf : in std_logic;
-			-- data vector from usb
+		receive : in std_logic;
+			-- data vector 
 		data : in  std_logic_vector ( 7 downto 0 );
 
 		
-		-- Output ports
-			-- read signal to usb
-	--	usb_read	: out std_logic;
-			-- end of reading signal to usb
-	--	usb_endread : out std_logic;
-			-- write signal to usb
-	--	usb_write	: out std_logic;
+		-- Output
 			-- raport vector 
 		raport : out std_logic_vector ( 7 downto 0 )
 		
@@ -55,7 +49,6 @@ architecture structure of CRCcheck is
 	signal addr_calc_cnt_clr : std_logic;
 	signal addr_calc_cnt_ena : std_logic;
 	signal ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : std_logic;
-	--signal mux_DATA : std_logic_vector ( 1 downto 0 );
 	signal calc_done, bufout_ready, bufout_done : std_logic;	
 	
 	signal mod_count : std_logic_vector ( 7 downto 0 );
@@ -111,11 +104,7 @@ component buforin
 		data  : in std_logic_vector ( 7 downto 0 );
 		proc_mod : in  std_logic_vector ( 1 downto 0 );
 		flow_in : in std_logic; 
-		
-		-- sygnaly z crccalc oczekuj¹ce na odczyt z RAM DATA 
-	--	ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : in std_logic;
-		-- mux wybierajacy sygnal do odczytu
-	--	muxDATA : in std_logic_vector ( 1 downto 0 ); 
+	
 		--zewnetrzny clr licznika adresow
 		addr_calc_cnt_clr : in std_logic;
 		addr_calc_cnt_ena : in std_logic;		
@@ -151,7 +140,6 @@ component crccalc
 		crc2_index : out std_logic_vector (15 downto 0 );
 		addr_calc_cnt_clr : out std_logic;
 		addr_calc_cnt_ena : out std_logic
-	--	muxDATA : out std_logic_vector ( 1 downto 0 )
 		
 	);
 end component;
@@ -190,7 +178,7 @@ begin
 		port map (
 			clk	=> clk,
 			rst	=> rst,
-			data_incoming => usb_rxf,
+			data_incoming => receive,
 			calc_done => calc_done,
 			equal_crc => equal_crc,
 			bufout_done => bufout_done,
@@ -250,7 +238,6 @@ begin
 			addr_calc_cnt_ena => addr_calc_cnt_ena,
 			calc_done => calc_done,
 			crc2_index => crc2_index
-		--	muxDATA => mux_DATA
 			
 		);
 	comparator_crc : comparator
