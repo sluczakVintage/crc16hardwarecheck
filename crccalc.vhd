@@ -1,8 +1,8 @@
 --------------------------------
 -- File		:	crccalc.vhd
--- Version	:	0.1
+-- Version	:	0.9
 -- Date		:	03.05.2009
--- Desc		:	First iteration of crc transmission control system
+-- Desc		:	CRC Calculator
 -- Author	:	Sebastian £uczak
 -- Author	:	Maciej Nowak 
 -- Based on	:	/
@@ -27,12 +27,10 @@ entity crccalc is
 	(
 	
 		--INPUTS
-		--@@ TODO dodaæ sygna³y z US
 		clk : in std_logic;
 		rst : in std_logic;
 		calc_start : in std_logic;
 		data_index : in std_logic_vector (7 downto 0 );
-		proc_mod : in  std_logic_vector ( 1 downto 0 );
 		--OUTPUTS
 		calc_done	: out std_logic;
 		crc2_index : out std_logic_vector (15 downto 0 );
@@ -57,15 +55,17 @@ signal data_to_process : std_logic_vector ( 7 downto 0 ) := "00000000";
 
 --Maszyna stanow odpowiedzialna za liczenie CRC
 type CALC_FSM_STATE_TYPE is (
-	calc_fsb_idle,
-	calc_fsb_calculate,
-	calc_fsb_store,
-	calc_fsb_processed
+	calc_idle,
+	calc_wait,
+	calc_calculate,
+	calc_store,
+	calc_processed
 	);
 signal calc_fsb_reg, calc_fsb_next	: CALC_FSM_STATE_TYPE;
 
 --sygna³y do licznika
-signal cnt_reg, cnt_next: std_logic_vector (4 downto 0);	
+signal cnt_reg, cnt_next: std_logic_vector (3 downto 0);	
+signal cnt_clr, cnt_ena : std_logic;
 
 component reg16
 	port
@@ -91,12 +91,14 @@ begin
 		end if;
 	end process;
 
-	process (cnt_reg, wait_forCRC)
+	process (cnt_reg, cnt_clr, cnt_ena)
 	begin
-		if (wait_forCRC = '0') then
+		if cnt_clr = '1' then
 			cnt_next <= (others => '0');
-		else
+		elsif cnt_ena = '1' then
 			cnt_next <= cnt_reg + "1";
+		else 
+			cnt_next <= cnt_reg;
 		end if;
 	end process;			  
 	
@@ -106,14 +108,14 @@ begin
 	process (clk, rst)
 	begin
 		if rst = '1' then
-			calc_fsb_reg <= calc_fsb_idle;	
+			calc_fsb_reg <= calc_idle;	
 		elsif rising_edge(clk) then
 			calc_fsb_reg <= calc_fsb_next;
 		end if;
 	end process;
 --	-- Funkcja przejsc-wyjsc
 	
-	process (calc_fsb_reg, calc_start, data_index, proc_mod, cnt_reg)
+	process (calc_fsb_reg, calc_start, data_index, cnt_reg)
 	begin
 	
 		data_to_process <= "00000000";
@@ -121,49 +123,47 @@ begin
 		addr_calc_cnt_clr  <= '0';
 		addr_calc_cnt_ena <= '0';
 
-		
-		wait_forCRC <= '0';
+		cnt_clr <= '0';
+		cnt_ena <= '0';
 		
 		case calc_fsb_reg is
-			when calc_fsb_idle =>  
+			when calc_idle =>  
+				cnt_clr <= '1';
 				if calc_start = '0' then
-					calc_fsb_next <= calc_fsb_idle;
+					calc_fsb_next <= calc_idle;
 				else
 					addr_calc_cnt_clr <= '1';
-					calc_fsb_next <= calc_fsb_calculate;
-				end if;
-
-			when calc_fsb_calculate =>
-						addr_calc_cnt_ena <= '1';
-
-						wait_forCRC <= '1';
-
-						if cnt_reg >= "00010" then ----------- tego nie powinno byæ
-							data_to_process <= data_index;
-							if data_index = "00000011" then  
-								data_to_process <= ( others => '0' );
-								calc_fsb_next <= calc_fsb_store;
-							else
-							calc_fsb_next <= calc_fsb_calculate;
-							end if;
-						else
-							calc_fsb_next <= calc_fsb_calculate;
-						end if;
-					
-			when calc_fsb_store =>
-				wait_forCRC <= '1';
-				data_to_process <= ( others => '0' );
-				if cnt_reg = "10000" then 
-					calc_fsb_next <= calc_fsb_processed;
-				else
-					calc_fsb_next <= calc_fsb_store;
+					calc_fsb_next <= calc_wait;
 				end if;
 				
-			when calc_fsb_processed =>
+			when calc_wait =>
+						addr_calc_cnt_ena <= '1';
+						calc_fsb_next <= calc_calculate;
+						
+			when calc_calculate =>
+						addr_calc_cnt_ena <= '1';
+						data_to_process <= data_index;
+						if data_index = "00000011" then  
+							data_to_process <= ( others => '0' );
+							calc_fsb_next <= calc_store;
+						else
+						calc_fsb_next <= calc_calculate;
+						end if;				
+					
+			when calc_store =>
+				cnt_ena <= '1';
+				data_to_process <= ( others => '0' );
+				if cnt_reg = "1011" then 
+					calc_fsb_next <= calc_processed;
+				else
+					calc_fsb_next <= calc_store;
+				end if;
+				
+			when calc_processed =>
 				addr_calc_cnt_clr <= '1';
 				data_to_process <= ( others => '0' );
 				done_calc <= '1';
-				calc_fsb_next <= calc_fsb_idle;
+				calc_fsb_next <= calc_idle;
 		end case;
 	end process;
 
@@ -181,7 +181,7 @@ begin
 	process (calc_fsb_reg, data_to_process, newCRC)
 	begin
 		nextCRC <= (others => '0');
-		if calc_fsb_reg = calc_fsb_idle then
+		if calc_fsb_reg = calc_idle then
 			nextCRC <= ( others => '0' );
 		else 
 			nextCRC <= nextCRC16_D8 (data_to_process, newCRC);

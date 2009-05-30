@@ -1,8 +1,8 @@
 --------------------------------
 -- File		:	comparator.vhd
--- Version	:	0.3
+-- Version	:	0.9
 -- Date		:	04.05.2009
--- Desc		:	Uk³ad porównuj¹cy 16bitowe wartoœci crc | dodatkowo sprawdza, czy indeksy badanych CRC s¹ zgodne (funkcjonalnoœæ robocza, DO USUNIÊCIA W PRZYSZ£OŒCI)
+-- Desc		:	CRC comparator
 -- Author	:	Sebastian £uczak
 -- Author	:	Maciej Nowak 
 -- Based on	:	wyk³ady dr in¿. Mariusz Rawski / Programowalne uk³ady przetwarzania sygna³ów i informacji prof. Tadeusz £uba
@@ -19,22 +19,19 @@ entity comparator is
 	port
 	(
 	
-		--INPUTS
-		--@@ TODO dodaæ stygna³y z US
+--INPUTS
 		crc_index : in std_logic_vector ( 15 downto 0 );
 		crc2_index : in std_logic_vector ( 15 downto 0 );
-		--OUTPUTS
+--OUTPUTS
 		equal_crc : out std_logic
 	);
 end comparator;
--- Library Clause(s) (optional)
--- Use Clause(s) (optional)
 
 architecture behavior of comparator is
 
 	-- deklaracje sygna³ów do porównywania - szybsza wersja na xor'ach
 	signal crc15, crc14, crc13, crc12, crc11, crc10, crc9, crc8, crc7, crc6, crc5, crc4, crc3, crc2, crc1, crc0 : std_logic;
-	-- deklaracje sygna³ów opisuj¹cych równoœæ odpowiednio - indeksów i wartoœci crc;
+	-- deklaracja sygna³u opisuj¹cego równoœæ wartoœci crc
 	signal crc_equal : std_logic;
 
 begin				

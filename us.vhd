@@ -1,8 +1,8 @@
 --------------------------------
 -- File		:	us.vhd
--- Version	:	0.1
+-- Version	:	0.9
 -- Date		:	03.05.2009
--- Desc		:	Uklad sterujacy
+-- Desc		:	Control system
 -- Author	:	Sebastian £uczak
 -- Author	:	Maciej Nowak 
 -- Based on	:	/
@@ -86,10 +86,10 @@ signal mod_passed0_reg, mod_passed1_reg, mod_passed2_reg, mod_passed3_reg : std_
 signal flow, start_processing, send_bufout : std_logic;
 signal mod_processed, start_calc, start_comp, start_trans : std_logic;
 signal mod_trans, index_status  : std_logic_vector ( 1 downto 0 );
-signal status_0bit, status_1bit : std_logic;
-signal status_0bit_reg, status_1bit_reg : std_logic;
-signal status_0bit_next, status_1bit_next : std_logic;
-signal record_stat0, record_stat1 : std_logic;
+
+signal status_index_reg, status_index_next : std_logic_vector ( 1 downto 0 );
+signal record_stat_ml, record_stat_crc, record_stat_ena : std_logic;
+signal bufout_trans_main, bufout_trans_proc : std_logic;
 begin
 
 
@@ -145,14 +145,14 @@ begin
 	end process;
 	-- Funkcja przejsc-wyjsc
 	
-process (main_fsb_reg, mod_processed, data_incoming, mod_count, mod_passed0_reg, mod_passed1_reg, mod_passed2_reg, mod_passed3_reg)
+process (main_fsb_reg, mod_processed, data_incoming, mod_count, mod_passed0_reg, mod_passed1_reg, mod_passed2_reg, mod_passed3_reg, bufout_done)
 begin
 	start_processing <= '0';
 	flow_in <= '0';
 	bufout_send <= '0';
 	proc_mod <= "00";
-	status_0bit <= '0';
-	record_stat0 <= '0';
+	record_stat_ml <= '0';
+	bufout_trans_main <= '0';
 	
 	case main_fsb_reg is
 	
@@ -166,13 +166,15 @@ begin
 			
 		when main_fsb_receive => -- jesli dane z pierwszego pakietu juz zostaly odebrane, zacznij je przetwarzac
 			if mod_passed0_reg = "11" then
-				status_0bit <= '1';
-				record_stat0 <= '1';
 				main_fsb_next <= main_fsb_proc0;
 			elsif mod_passed0_reg = "10" then
-				status_0bit <= '0';
-				record_stat0 <= '1';
-				main_fsb_next <= main_fsb_busy0;
+				record_stat_ml <= '1';
+				if bufout_done = '0' then
+					main_fsb_next <= main_fsb_busy0;
+					bufout_trans_main <= '1';
+				else
+					main_fsb_next <= main_fsb_receive;
+				end if;	
 			else
 				flow_in <= '1';
 				main_fsb_next <= main_fsb_receive;
@@ -193,17 +195,19 @@ begin
 			
 		when main_fsb_busy0 => -- jesli dane przetworzone, rozpocznij przetwarzanie nastepnych
 			if mod_passed1_reg = "11" then
-				status_0bit <= '1';
-				record_stat0 <= '1';
 				main_fsb_next <= main_fsb_proc1;
 			elsif mod_passed1_reg = "10" then
-				status_0bit <= '0';
-				record_stat0 <= '1';
-				main_fsb_next <= main_fsb_busy1;
+				record_stat_ml <= '1';
+				if bufout_done = '0' then
+					main_fsb_next <= main_fsb_busy1;
+					bufout_trans_main <= '1';
+				else
+					main_fsb_next <= main_fsb_busy0;
+				end if;	
 			else
 				main_fsb_next <= main_fsb_busy0;
 			end if;
-------------------------------------------------------------------------------------------
+			
 		when main_fsb_proc1 => -- jesli dane z pierwszego pakietu zostaly odebrane, czekaj na zakonczenie przetwarzania
 			if mod_processed = '1' then
 				if mod_count = "01" then
@@ -219,13 +223,15 @@ begin
 			
 		when main_fsb_busy1 => -- jesli dane przetworzone, rozpocznij przetwarzanie nastepnych
 			if mod_passed2_reg = "11" then
-				status_0bit <= '1';
-				record_stat0 <= '1';
 				main_fsb_next <= main_fsb_proc2;
 			elsif mod_passed2_reg = "10" then
-				status_0bit <= '0';
-				record_stat0 <= '1';
-				main_fsb_next <= main_fsb_busy2;
+				record_stat_ml <= '1';
+				if bufout_done = '0' then
+					main_fsb_next <= main_fsb_busy2;
+					bufout_trans_main <= '1';
+				else
+					main_fsb_next <= main_fsb_busy1;
+				end if;	
 			else
 				main_fsb_next <= main_fsb_busy1;
 			end if;
@@ -245,13 +251,15 @@ begin
 			
 		when main_fsb_busy2 => -- jesli dane przetworzone, rozpocznij przetwarzanie nastepnych
 			if mod_passed3_reg = "11" then
-				status_0bit <= '1';
-				record_stat0 <= '1';
 				main_fsb_next <= main_fsb_proc3;
 			elsif mod_passed3_reg = "10" then
-				status_0bit <= '0';
-				record_stat0 <= '1';
-				main_fsb_next <= main_fsb_send;
+				record_stat_ml <= '1';
+				if bufout_done = '0' then
+					main_fsb_next <= main_fsb_send;
+					bufout_trans_main <= '1';
+				else
+					main_fsb_next <= main_fsb_busy2;
+				end if;	
 			else
 				main_fsb_next <= main_fsb_busy2;
 			end if;
@@ -282,20 +290,18 @@ end process;
 	end process;
 --	-- Funkcja przejsc-wyjsc
 		
-	process (proc_fsb_reg, start_processing, calc_done, bufout_done, equal_crc, status_0bit)
+	process (proc_fsb_reg, start_processing, calc_done, bufout_done, equal_crc)--, status_0bit)
 	begin
 	calc_start <= '0';
-	bufout_trans <= '0';
+	bufout_trans_proc <= '0';
 	mod_processed <= '0';
-	status_1bit <= '0';
-	record_stat1 <= '0';
-	
+	record_stat_crc <= '0';
+	record_stat_ena <= '0';
+
 		case proc_fsb_reg is
 			when proc_fsb_idle =>  
 				if start_processing = '0' then 
 					proc_fsb_next <= proc_fsb_idle;
-				--elsif status_0bit = '1' then
-				--	proc_fsb_next <= proc_fsb_transmit;
 				else						-- jesli jest rozkaz zacznij przetwarzac
 					proc_fsb_next <= proc_fsb_calc;
 					calc_start <= '1'; 
@@ -309,14 +315,14 @@ end process;
 				end if;
 				
 			when proc_fsb_comp =>	
-					status_1bit <= equal_crc;
-					record_stat1 <= '1';
+					record_stat_crc <= equal_crc;
+					record_stat_ena <= '1';
 					proc_fsb_next <= proc_fsb_transmit;
 					
 			when proc_fsb_transmit =>
 				if bufout_done = '0' then
 					proc_fsb_next <= proc_fsb_transmit;
-					bufout_trans <= '1';
+					bufout_trans_proc <= '1';
 				else
 					proc_fsb_next <= proc_fsb_idle;
 					mod_processed <= '1';
@@ -326,53 +332,31 @@ end process;
 	end process;
 
 
------------------
-
-	process (status_0bit_reg, record_stat0, status_0bit)
+	process (status_index_reg, record_stat_ml, record_stat_ena, record_stat_crc)
 	begin
-		if record_stat0 = '1' then
-			status_0bit_next <= status_0bit;
+		if record_stat_ml = '1' then
+			status_index_next <= "01";
+		elsif record_stat_ena = '1' then
+			if record_stat_crc = '1' then
+				status_index_next <= "11";
+			else 
+				status_index_next <= "10";
+			end if;
 		else
-			status_0bit_next <= status_0bit_reg;
+			status_index_next <= status_index_reg;
+		end if;
+	end process;
+
+	process (clk, rst)
+	begin
+		if rst = '1' then
+			status_index_reg <= "00";	
+		elsif rising_edge(clk) then
+			status_index_reg <= status_index_next;
 		end if;
 	end process;
 	
-	process (clk, rst)
-	begin
-		if rst = '1' then
-			status_0bit_reg <= '0';	
-		elsif rising_edge(clk) then
-			status_0bit_reg <= status_0bit_next;
-		end if;
-	end process;
-
-	process (status_1bit_reg, record_stat1, status_1bit)
-	begin
-		if record_stat1 = '1' then
-			status_1bit_next <= status_1bit;
-		else
-			status_1bit_next <= status_1bit_reg;
-		end if;
-	end process;
-
-	process (clk, rst)
-	begin
-		if rst = '1' then
-			status_1bit_reg <= '0';	
-		elsif rising_edge(clk) then
-			status_1bit_reg <= status_1bit_next;
-		end if;
-	end process;
-
-	process (clk, rst)
-	begin
-		if rst = '1' then
-			status_index <= "00";	
-		elsif rising_edge(clk) then
-			status_index <= ( status_0bit_reg & status_1bit_reg );
-		end if;
-	end process;
-
-
+		status_index <= status_index_reg;
+		bufout_trans <= bufout_trans_main OR bufout_trans_proc;
 
 end rtl;

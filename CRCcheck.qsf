@@ -50,7 +50,6 @@ set_global_assignment -name SEARCH_PATH "f:\\workspaces\\quartus\\crc16hardwarec
 set_global_assignment -name MISC_FILE "F:/workspaces/Quartus/crc16hardwarecheck/CRCcheck.dpf"
 set_global_assignment -name MISC_FILE "D:/workspaces/Quartus/crc16hardwarecheck/CRCcheck.dpf"
 set_global_assignment -name SIMULATION_MODE FUNCTIONAL
-set_global_assignment -name USE_CONFIGURATION_DEVICE ON
 set_global_assignment -name END_TIME "100 us"
 set_global_assignment -name OPTIMIZE_POWER_DURING_SYNTHESIS "NORMAL COMPILATION"
 set_global_assignment -name SYNTH_MESSAGE_LEVEL HIGH
@@ -61,20 +60,18 @@ set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_global_assignment -name LL_ROOT_REGION ON -section_id "Root Region"
 set_global_assignment -name LL_MEMBER_STATE LOCKED -section_id "Root Region"
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
-set_global_assignment -name INCREMENTAL_VECTOR_INPUT_SOURCE CRCcheckFINAL3.vwf
-set_global_assignment -name VHDL_FILE us.vhd
-set_global_assignment -name VHDL_FILE ram.vhd
-set_global_assignment -name VHDL_FILE buforin.vhd
-set_global_assignment -name VHDL_FILE regs.vhd
-set_global_assignment -name VHDL_FILE PCK_CRC16_D8.vhd
 set_global_assignment -name VHDL_FILE CRCcheck.vhd
-set_global_assignment -name VHDL_FILE crccalc.vhd
-set_global_assignment -name VHDL_FILE buforout.vhd
-set_global_assignment -name VHDL_FILE comparator.vhd
-set_global_assignment -name VECTOR_WAVEFORM_FILE CRCcheck.vwf
-set_global_assignment -name VHDL_FILE dmux.vhd
+set_global_assignment -name VHDL_FILE us.vhd
 set_global_assignment -name VHDL_FILE flowcontrol.vhd
-set_global_assignment -name VECTOR_WAVEFORM_FILE buforin.vwf
-set_global_assignment -name VECTOR_WAVEFORM_FILE crccalc.vwf
-set_global_assignment -name VECTOR_WAVEFORM_FILE flow2.vwf
-set_global_assignment -name VECTOR_WAVEFORM_FILE CRCcheckFINAL3.vwf
+set_global_assignment -name VHDL_FILE buforin.vhd
+set_global_assignment -name VHDL_FILE crccalc.vhd
+set_global_assignment -name VHDL_FILE PCK_CRC16_D8.vhd
+set_global_assignment -name VHDL_FILE comparator.vhd
+set_global_assignment -name VHDL_FILE buforout.vhd
+set_global_assignment -name VHDL_FILE dmux.vhd
+set_global_assignment -name VHDL_FILE regs.vhd
+set_global_assignment -name VHDL_FILE ram.vhd
+set_global_assignment -name VECTOR_WAVEFORM_FILE CRCcheck.vwf
+set_global_assignment -name VECTOR_WAVEFORM_FILE CRCcheckCRCerror.vwf
+set_global_assignment -name VECTOR_WAVEFORM_FILE CRCcheckLENGTHerror.vwf
+set_global_assignment -name INCREMENTAL_VECTOR_INPUT_SOURCE CRCcheck.vwf

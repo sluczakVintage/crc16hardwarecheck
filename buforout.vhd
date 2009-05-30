@@ -1,8 +1,8 @@
 --------------------------------
 -- File		:	buforout.vhd
--- Version	:	0.1
+-- Version	:	0.9
 -- Date		:	03.05.2009
--- Desc		:	Buforin entity
+-- Desc		:	Output buffer entity
 -- Author	:	Sebastian £uczak
 -- Author	:	Maciej Nowak 
 -- Based on	:	/
@@ -18,9 +18,7 @@ entity buforout is
 
 	port
 	(
-		--INPUTS
-		--@@ TODO dodaæ stygna³y z US
-		
+--INPUTS		
 		clk : in std_logic;
 		rst : in std_logic;
 		
@@ -28,14 +26,13 @@ entity buforout is
 		bufout_trans : in std_logic;
 		status_index : in std_logic_vector ( 1 downto 0 );
 	
-		--OUTPUTS
+--OUTPUTS
 		raport : out std_logic_vector (7 downto 0 ); 
 		bufout_done : out std_logic
 		
 	);
 end buforout;
--- Library Clause(s) (optional)
--- Use Clause(s) (optional)
+
 
 architecture data_flow of buforout is
 

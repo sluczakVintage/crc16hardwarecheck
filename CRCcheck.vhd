@@ -1,8 +1,8 @@
 --------------------------------
 -- File		:	CRCcheck.vhd
--- Version	:	0.1
+-- Version	:	0.9
 -- Date		:	03.05.2009
--- Desc		:	First iteration of crc transmission control system
+-- Desc		:	Crc transmission control system main entity
 -- Author	:	Sebastian £uczak
 -- Author	:	Maciej Nowak 
 -- Based on	:	/
@@ -30,7 +30,7 @@ entity CRCcheck is
 		data : in  std_logic_vector ( 7 downto 0 );
 
 		
-		-- Output
+-- Output
 			-- raport vector 
 		raport : out std_logic_vector ( 7 downto 0 )
 		
@@ -63,7 +63,7 @@ component us
 	
 	port
 	(
-		-- Input ports
+-- INPUTS
 		rst		   	: in std_logic;
 		clk		   	: in std_logic;
 		data_incoming : in std_logic;
@@ -81,7 +81,7 @@ component us
 		mod_passed2 : in std_logic_vector ( 1 downto 0 );
 		mod_passed3 : in std_logic_vector ( 1 downto 0 );	
 
-		-- Output ports
+-- OUTPUTS
 		flow_in	: out std_logic;
 		
 		status_index : out std_logic_vector ( 1 downto 0 );
@@ -97,8 +97,7 @@ end component;
 component buforin 	
 	port
 	(
-			-- INPUTS
-			--@@ TODO: nale¿y dodaæ sygna³y z uk³adu steruj¹cego
+-- INPUTS
 		clk : in  std_logic ;
 		rst : in std_logic;
 		data  : in std_logic_vector ( 7 downto 0 );
@@ -108,8 +107,8 @@ component buforin
 		--zewnetrzny clr licznika adresow
 		addr_calc_cnt_clr : in std_logic;
 		addr_calc_cnt_ena : in std_logic;		
-			--OUTPUTS
-	--	usb_endread : out std_logic;
+		
+--OUTPUTS
 		data_index : out std_logic_vector ( 7 downto 0 );
 		CRC_index : out std_logic_vector ( 15 downto 0 );
 		
@@ -129,13 +128,13 @@ end component;
 component crccalc
 	port
 	(
-	
+--INPUTS	
 		clk : in std_logic;
 		rst : in std_logic;
 		calc_start : in std_logic;
 		data_index : in std_logic_vector (7 downto 0 );
-		proc_mod : in  std_logic_vector ( 1 downto 0 );
-		--OUTPUTS
+		
+--OUTPUTS
 		calc_done	: out std_logic;
 		crc2_index : out std_logic_vector (15 downto 0 );
 		addr_calc_cnt_clr : out std_logic;
@@ -147,11 +146,10 @@ end component;
 component comparator
 	port
 	(
-		--INPUTS
-		--@@ TODO dodaæ stygna³y z US
+--INPUTS
 		CRC_index : in std_logic_vector ( 15 downto 0 );
 		CRC2_index : in std_logic_vector ( 15 downto 0 );
-		--OUTPUTS
+--OUTPUTS
 		equal_crc : out std_logic
 	);
 end component;
@@ -159,13 +157,14 @@ end component;
 component buforout
 	port
 	(
+--INPUTS
 		clk : in std_logic;
 		rst : in std_logic;
 		
 		bufout_send : in std_logic;
 		bufout_trans : in std_logic;
 		status_index : in std_logic_vector ( 1 downto 0 );
-			--OUTPUTS
+--OUTPUTS
 		raport : out std_logic_vector (7 downto 0 ); 
 		bufout_done : out std_logic
 	);
@@ -212,10 +211,7 @@ begin
 			addr_calc_cnt_clr => addr_calc_cnt_clr,
 			addr_calc_cnt_ena => addr_calc_cnt_ena,
 			
-		--	muxDATA => mux_DATA,
-			
-			mod_count => mod_count,
-			
+			mod_count => mod_count,		
 			mod_pass0 => mod_pass0,
 			mod_pass1 => mod_pass1,
 			mod_pass2 => mod_pass2,
@@ -232,7 +228,6 @@ begin
 			rst => rst,
 			data_index => data_index,
 			calc_start => calc_start,
-			proc_mod => proc_mod,
 			
 			addr_calc_cnt_clr => addr_calc_cnt_clr,
 			addr_calc_cnt_ena => addr_calc_cnt_ena,

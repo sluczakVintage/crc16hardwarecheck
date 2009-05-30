@@ -1,6 +1,6 @@
 --------------------------------
 -- File		:	flowcontrol.vhd
--- Version	:	0.4
+-- Version	:	0.9
 -- Date		:	03.05.2009
 -- Desc		:	Bit flow controler
 -- Author	:	Sebastian £uczak
@@ -100,13 +100,11 @@ type FLOW_FSM_STATE_TYPE is (
 	
 signal flow_fsm_reg, flow_fsm_next	: FLOW_FSM_STATE_TYPE;
 
-	
-signal flow_reset, count_start : std_logic;
-
 
 
 -- Licznik jako rejestr - sygna³y
 signal cnt_reg, cnt_next : std_logic_vector ( 10 downto 0 );	
+signal cnt_ena, cnt_clr : std_logic;
 
 begin
 -- Licznik jako rejestr 11bit 
@@ -119,13 +117,15 @@ begin
 		end if;
 	end process;
 
-	process (cnt_reg, count_start, flow_reset)
-	begin
-		if (count_start = '1') OR (flow_reset = '1') then
 
+	process (cnt_reg, cnt_clr, cnt_ena)
+	begin
+		if cnt_clr = '1' then
 			cnt_next <= ( others => '0' );
-		else
+		elsif cnt_ena = '1' then
 			cnt_next <= cnt_reg + "1";
+		else
+			cnt_next <= cnt_reg;
 		end if;
 	end process;			  
 	
@@ -144,93 +144,88 @@ end process;
 	-- Funkcja przejsc-wyjsc
 process(flow_fsm_reg, flow_in, cnt_reg, data)
 	begin
-		count_start <= '0';
-		flow_reset <= '0';
+		cnt_clr <= '0';
+		cnt_ena <= '1';
 
 		case flow_fsm_reg is
 			when flow_idle =>			
-				if flow_in = '0' then 		
+				cnt_clr <= '1';
+				if flow_in = '0' then 	
 					flow_fsm_next <= flow_idle;				
 				else 
 					if data = "00000010" then
-						count_start <= '1';
 						flow_fsm_next <= flow_sop;
 					else
-						flow_reset <= '1';
 						flow_fsm_next <= flow_idle;
 					end if;
 				end if; 
 					
 			when flow_sop => 
-				if cnt_reg = 0 then -- 8bit						
-					count_start <= '1';
+			-- 8bit						
+					cnt_clr <= '1';
 					flow_fsm_next <= flow_header_rlm;
-				else 
-					flow_fsm_next <= flow_sop;	
-				end if;
+
 				
 			when flow_header_rlm =>
-				if cnt_reg = 0 then -- 8bit
-					count_start <= '1';
+					cnt_clr <= '1';
 					flow_fsm_next <= flow_header_rdm0;
-				else 
-					flow_fsm_next <= flow_header_rlm;			
-				end if;
 				
 			when flow_header_rdm0 =>
+					cnt_ena <= '1';
 				if cnt_reg = 1 then -- 16bit
-					count_start <= '1';
+					cnt_clr <= '1';
 					flow_fsm_next <= flow_header_rdm1;
 				else 
 					flow_fsm_next <= flow_header_rdm0;
 				end if;
 				
 			when flow_header_rdm1 =>
+					cnt_ena <= '1';
 				if cnt_reg = 1 then -- 16bit
-					count_start <= '1';
+					cnt_clr <= '1';
 					flow_fsm_next <= flow_header_rdm2;				
 				else 
 					flow_fsm_next <= flow_header_rdm1;
 				end if;
 				
 			when flow_header_rdm2 =>
+					cnt_ena <= '1';
 				if cnt_reg = 1 then -- 16bit
-					count_start <= '1';
+					cnt_clr <= '1';
 					flow_fsm_next <= flow_header_rdm3;
 				else 
 					flow_fsm_next <= flow_header_rdm2;
 				end if;
 				
 			when flow_header_rdm3 =>
+					cnt_ena <= '1';
 				if cnt_reg = 1 then -- 16bit
-					count_start <= '1';
+					cnt_clr <= '1';
 					flow_fsm_next <= flow_eoh;
 				else 
 					flow_fsm_next <= flow_header_rdm3;
 				end if; 	
 				
 			when flow_eoh =>
-				if cnt_reg = 0 then -- 8bit
+							-- 8bit
 					if data = "00000110" then
-						count_start <= '1';
+						cnt_clr <= '1';
 						flow_fsm_next <= flow_crc0;	
 					else
-							flow_reset <= '1';
 							flow_fsm_next <= flow_idle;
 					end if;
-				else 
-					flow_fsm_next <= flow_eoh;
-				end if; 	
-				
+
 			when flow_crc0 =>
+					cnt_ena <= '1';
 				if cnt_reg = 1 then -- 16bit
-					count_start <= '1';
+					cnt_clr <= '1';
 					flow_fsm_next <= flow_data0;
 				else 
 					flow_fsm_next <= flow_crc0;
 				end if; 
 		
 			when flow_data0 => 
+					cnt_ena <= '1';
 				if data = "00000011" then	
 					flow_fsm_next <= flow_eom0;
 				else 
@@ -242,18 +237,20 @@ process(flow_fsm_reg, flow_in, cnt_reg, data)
 				end if; 
 				
 			when flow_eom0 => -- 16bit
-					count_start <= '1';
+					cnt_clr <= '1';
 					flow_fsm_next <= flow_crc1;
 					
 			when flow_crc1 =>
+					cnt_ena <= '1';
 				if cnt_reg = 1 then -- 16bit
-					count_start <= '1';
+					cnt_clr <= '1';
 					flow_fsm_next <= flow_data1;
 				else 
 					flow_fsm_next <= flow_crc1;
 				end if; 	
 				
 			when flow_data1 =>
+					cnt_ena <= '1';
 				if data = "00000011" then		
 					flow_fsm_next <= flow_eom1;
 				else 
@@ -265,18 +262,20 @@ process(flow_fsm_reg, flow_in, cnt_reg, data)
 				end if; 	
 				
 			when flow_eom1 => -- 16bit
-					count_start <= '1';
+					cnt_clr <= '1';
 					flow_fsm_next <= flow_crc2;
 					
 			when flow_crc2 =>
+					cnt_ena <= '1';
 				if cnt_reg = 1 then -- 16bit
-					count_start <= '1';
+					cnt_clr <= '1';
 					flow_fsm_next <= flow_data2;
 				else 
 					flow_fsm_next <= flow_crc2;
 				end if; 	
 				
 			when flow_data2 =>
+					cnt_ena <= '1';
 				if data = "00000011" then		
 					flow_fsm_next <= flow_eom2;
 				else 
@@ -288,18 +287,20 @@ process(flow_fsm_reg, flow_in, cnt_reg, data)
 				end if; 	
 				
 			when flow_eom2 => -- 16bit
-					count_start <= '1';
+					cnt_clr <= '1';
 					flow_fsm_next <= flow_crc3;
 					
 			when flow_crc3 => -- 16bit
+					cnt_ena <= '1';
 				if cnt_reg = 1 then --24728bit
-					count_start <= '1';
+					cnt_clr <= '1';
 					flow_fsm_next <= flow_data3;
 				else 
 					flow_fsm_next <= flow_crc3;
 				end if; 	
 				
 			when flow_data3 => 
+					cnt_ena <= '1';
 				if data = "00000011" then
 					flow_fsm_next <= flow_eom3;
 				else 
@@ -311,11 +312,10 @@ process(flow_fsm_reg, flow_in, cnt_reg, data)
 				end if; 	
 				
 			when flow_eom3 => -- 16bit
-					count_start <= '1';
+					cnt_clr <= '1';
 					flow_fsm_next <= flow_eop;
 					
 			when flow_eop => -- 16bit
-				count_start <= '1';
 				if data = "00000100" then
 					flow_fsm_next <= flow_idle;
 				else 
@@ -415,8 +415,8 @@ process(flow_fsm_reg, flow_in, cnt_reg, data)
 					enable_MODdmux0 <= "1";
 					wen_DATA0 <= '1';
 					trans_mod <= "00";
-					addr_flow_cnt_ena <= '1';
-								
+					addr_flow_cnt_ena <= '1';								
+					
 			when flow_eom0 =>
 					enable_RDMmux <= "00";
 					mod_pass0 <= '1';
@@ -442,7 +442,6 @@ process(flow_fsm_reg, flow_in, cnt_reg, data)
 					wen_DATA1 <= '1';
 					trans_mod <= "01";
 					addr_flow_cnt_ena <= '1';
-					
 					
 			when flow_eom1 =>
 					enable_RDMmux <= "01";

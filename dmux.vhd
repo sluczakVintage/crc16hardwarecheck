@@ -1,11 +1,11 @@
 --------------------------------
--- File		:	mux.vhd
--- Version	:	0.1
+-- File		:	dmux.vhd
+-- Version	:	0.9
 -- Date		:	03.05.2009
--- Desc		:	Zestaw multiplekserów i demultiplekserów
+-- Desc		:	Multiplexers and demultiplexers set
 -- Author	:	Sebastian £uczak
 -- Author	:	Maciej Nowak 
--- Based on	:	Wyk³ady dr Mariusz Rawski
+-- Based on	:	dr Mariusz Rawski Lectures
 --------------------------------
 
 ---------------------------

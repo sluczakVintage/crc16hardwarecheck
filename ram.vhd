@@ -96,8 +96,8 @@ BEGIN
 		numwords_a => 1024,
 		operation_mode => "SINGLE_PORT",
 		outdata_aclr_a => "NONE",
-		outdata_reg_a => "CLOCK0",
-		power_up_uninitialized => "TRUE",
+		outdata_reg_a => "UNREGISTERED",
+		power_up_uninitialized => "FALSE",
 		widthad_a => 10,
 		width_a => 8,
 		width_byteena_a => 1,
@@ -132,7 +132,7 @@ END SYN;
 -- Retrieval info: PRIVATE: DataBusSeparated NUMERIC "1"
 -- Retrieval info: PRIVATE: IMPLEMENT_IN_LES NUMERIC "0"
 -- Retrieval info: PRIVATE: INIT_FILE_LAYOUT STRING "PORT_A"
--- Retrieval info: PRIVATE: INIT_TO_SIM_X NUMERIC "1"
+-- Retrieval info: PRIVATE: INIT_TO_SIM_X NUMERIC "0"
 -- Retrieval info: PRIVATE: INTENDED_DEVICE_FAMILY STRING "Stratix"
 -- Retrieval info: PRIVATE: JTAG_ENABLED NUMERIC "0"
 -- Retrieval info: PRIVATE: JTAG_ID STRING "NONE"
@@ -143,7 +143,7 @@ END SYN;
 -- Retrieval info: PRIVATE: READ_DURING_WRITE_MODE_PORT_A NUMERIC "3"
 -- Retrieval info: PRIVATE: RegAddr NUMERIC "1"
 -- Retrieval info: PRIVATE: RegData NUMERIC "1"
--- Retrieval info: PRIVATE: RegOutput NUMERIC "1"
+-- Retrieval info: PRIVATE: RegOutput NUMERIC "0"
 -- Retrieval info: PRIVATE: SYNTH_WRAPPER_GEN_POSTFIX STRING "0"
 -- Retrieval info: PRIVATE: SingleClock NUMERIC "1"
 -- Retrieval info: PRIVATE: UseDQRAM NUMERIC "1"
@@ -159,8 +159,8 @@ END SYN;
 -- Retrieval info: CONSTANT: NUMWORDS_A NUMERIC "1024"
 -- Retrieval info: CONSTANT: OPERATION_MODE STRING "SINGLE_PORT"
 -- Retrieval info: CONSTANT: OUTDATA_ACLR_A STRING "NONE"
--- Retrieval info: CONSTANT: OUTDATA_REG_A STRING "CLOCK0"
--- Retrieval info: CONSTANT: POWER_UP_UNINITIALIZED STRING "TRUE"
+-- Retrieval info: CONSTANT: OUTDATA_REG_A STRING "UNREGISTERED"
+-- Retrieval info: CONSTANT: POWER_UP_UNINITIALIZED STRING "FALSE"
 -- Retrieval info: CONSTANT: WIDTHAD_A NUMERIC "10"
 -- Retrieval info: CONSTANT: WIDTH_A NUMERIC "8"
 -- Retrieval info: CONSTANT: WIDTH_BYTEENA_A NUMERIC "1"
@@ -179,7 +179,7 @@ END SYN;
 -- Retrieval info: GEN_FILE: TYPE_NORMAL ram.vhd TRUE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL ram.inc FALSE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL ram.cmp TRUE
--- Retrieval info: GEN_FILE: TYPE_NORMAL ram.bsf FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL ram.bsf TRUE FALSE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL ram_inst.vhd FALSE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL ram_waveforms.html TRUE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL ram_wave*.jpg FALSE

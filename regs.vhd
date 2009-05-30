@@ -1,8 +1,8 @@
 --------------------------------
--- File		:	.vhd
--- Version	:	0.1
+-- File		:	regs.vhd
+-- Version	:	0.9
 -- Date		:	03.05.2009
--- Desc		:	Buforin entity
+-- Desc		:	Register library
 -- Author	:	Sebastian £uczak
 -- Author	:	Maciej Nowak 
 -- Based on	:	/
@@ -20,7 +20,6 @@ entity reg8 is
 	(
 	
 		--INPUTS
-		--@@ TODO dodaæ stygna³y z US
 		clk : in std_logic;
 		rst : in std_logic;
 		ena : in std_logic;
@@ -65,7 +64,6 @@ entity reg2 is
 	(
 	
 		--INPUTS
-		--@@ TODO dodaæ stygna³y z US
 		clk : in std_logic;
 		rst : in std_logic;
 		ena : in std_logic;
@@ -111,7 +109,6 @@ entity reg2bit_to_8bit is
 	(
 	
 		--INPUTS
-		--@@ TODO dodaæ stygna³y z US
 		clk : in std_logic;
 		rst : in std_logic;
 		ena : in std_logic;
@@ -175,7 +172,6 @@ entity reg8it_to16bit is
 	(
 	
 		--INPUTS
-		--@@ TODO dodaæ stygna³y z US
 		clk : in std_logic;
 		rst : in std_logic;
 		ena : in std_logic;
@@ -227,7 +223,6 @@ entity reg16 is
 	(
 	
 		--INPUTS
-		--@@ TODO dodaæ stygna³y z US
 		clk : in std_logic;
 		rst : in std_logic;
 		ena : in std_logic;

@@ -1,8 +1,8 @@
 --------------------------------
 -- File		:	buforin.vhd
--- Version	:	0.1
+-- Version	:	0.9
 -- Date		:	03.05.2009
--- Desc		:	Buforin entity
+-- Desc		:	Input buffer entity
 -- Author	:	Sebastian £uczak
 -- Author	:	Maciej Nowak 
 -- Based on	:	/
@@ -24,18 +24,12 @@ entity buforin is
 	port
 	(
 -- INPUTS
-			--@@ TODO: nale¿y dodaæ sygna³y z uk³adu steruj¹cego
 		clk : in  std_logic ;
 		rst : in std_logic;
 		data  : in std_logic_vector ( 7 downto 0 );
 		proc_mod : in  std_logic_vector ( 1 downto 0 );
 		flow_in : in std_logic; 
-		
-		-- sygnaly z crccalc oczekuj¹ce na odczyt z RAM DATA 
-	--	ren_DATA0, ren_DATA1, ren_DATA2, ren_DATA3 : in std_logic;
-		-- mux wybierajacy sygnal do odczytu
-	--	muxDATA : in std_logic_vector ( 1 downto 0 ); 
-		--zewnetrzny clr licznika adresow
+
 		addr_calc_cnt_clr : in std_logic;
 		addr_calc_cnt_ena : in std_logic;
 		
@@ -85,7 +79,7 @@ signal sig00_pack, sig01_pack, sig10_pack, sig11_pack : std_logic_vector ( 7 dow
 -------------------------------------
 --sygna³y RLM
 -------------------------------------
-signal sig2_rlm : std_logic_vector ( 7 downto 0 );  --<------------ OBS£U¯YÆ
+signal sig2_rlm : std_logic_vector ( 7 downto 0 ); 
 -------------------------------------
 -- sygna³y RDM
 -------------------------------------
