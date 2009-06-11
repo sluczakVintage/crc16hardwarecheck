@@ -1,0 +1,6 @@
+Srodowisko testowe powinno byc opisane w sposob analogiczny do projektow przykladowych. Kilka istotnych rzeczy na ktore bede zwracal uwage to: - czesc podajaca dane do ukladu (stymulator) powinna byc niezalezna od czesci odbierajacej dane z ukladu (monitor). Obie te czesci maja jedynie komunikowac sie z badanym ukladem za posrednictwem jego interfejsu. Na przyklad stymulator podaje kolejne dane badajac stan sygnalu 'busy' (lub innego o podobnej funkcji), a monitor badajac sygnal 'data_valid' (lub inny podobny). Prosze nie implementowac stymulatora i monitora w tym samym procesie, tak samo prosze nie implementowac rozwiazania, które poda dane, odczeka jakis ustalony czas i sprawdzi stan wyjsc. Srodowisko testowe ma m.in. badac poprawnosc działania interfejsu, dlatego konieczne jest odwolanie do wyjsc informujacych o stanie wewnetrznym projektowanego przez Panstwa ukladu (takich jak wspomniane 'busy' lub 'data_valid').
+932
+0000001110100100
+
+CRC
+1010100100010011

@@ -1,0 +1,6 @@
+A cyclic redundancy check (CRC) is a non-secure hash function designed to detect accidental changes to raw computer data, and commonly used in digital networks and storage devices such as hard disk drives. A CRC-enabled device calculates a short, fixed-length binary sequence, known as the CRC code or just CRC, for each block of data and sends or stores them both together. When a block is read or received the device repeats the calculation; if the new CRC does not match (or in some cases, cancel out) the one calculated earlier then the block contains a data error and the device may take corrective action such as rereading or requesting the block be sent again. CRCs are so called as the check (data verification) code is a redundancy (it adds zero information) and cyclic (the message data circulates in the check code during calculation).
+846
+0000001101001110
+
+CRC
+0010111011110110
