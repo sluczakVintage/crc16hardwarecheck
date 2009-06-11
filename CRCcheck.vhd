@@ -20,19 +20,23 @@ entity CRCcheck is
 	port
 	(
 -- Input
-			-- clock signal
-		clk : in  std_logic ;
-			-- synchronous reset signal
-		rst : in  std_logic;
-			-- read aproval signal
+			-- zegar
+		clk		: in  std_logic ;
+			-- reset asynchroniczny
+		rst		: in  std_logic;
+			-- polecenie odbioru danych
 		receive : in std_logic;
-			-- data vector 
-		data : in  std_logic_vector ( 7 downto 0 );
+			-- wektor danych
+		data 	: in  std_logic_vector ( 7 downto 0 );
 
 		
 -- Output
-			-- raport vector 
-		raport : out std_logic_vector ( 7 downto 0 )
+			-- sygna³ zajêtoœci (po zakoñczeniu odbioru danych)
+		busy	: out std_logic;
+			-- sygna³ gotowoœci do wys³ania raportu
+		send	: out std_logic;
+			-- wektor raportu
+		raport 	: out std_logic_vector ( 7 downto 0 )
 		
 	);
 end CRCcheck;
@@ -56,6 +60,7 @@ architecture structure of CRCcheck is
 	signal mod_passed0, mod_passed1, mod_passed2, mod_passed3 : std_logic_vector ( 1 downto 0 );
 	signal flow_in, calc_start, bufout_trans, bufout_send : std_logic;
 	signal proc_mod : std_logic_vector ( 1 downto 0 );
+	signal sent	: std_logic;
 	
 	-- US
 	
@@ -80,15 +85,19 @@ component us
 		mod_passed1 : in std_logic_vector ( 1 downto 0 );
 		mod_passed2 : in std_logic_vector ( 1 downto 0 );
 		mod_passed3 : in std_logic_vector ( 1 downto 0 );	
+		
+		sent	 	: in std_logic; -- oznacza, ze raport zostal juz wyslany
 
 -- OUTPUTS
-		flow_in	: out std_logic;
+		flow_in		: out std_logic;
 		
 		status_index : out std_logic_vector ( 1 downto 0 );
 		calc_start	: out std_logic;
 		bufout_trans: out std_logic;
 		bufout_send	: out std_logic;
-		proc_mod : out std_logic_vector ( 1 downto 0 )
+		proc_mod	: out std_logic_vector ( 1 downto 0 );
+		
+		busy		: out std_logic
 	);
 end component;
 	
@@ -103,6 +112,7 @@ component buforin
 		data  : in std_logic_vector ( 7 downto 0 );
 		proc_mod : in  std_logic_vector ( 1 downto 0 );
 		flow_in : in std_logic; 
+		sent 	: in std_logic; -- oznacza, ze raport zostal juz wyslany
 	
 		--zewnetrzny clr licznika adresow
 		addr_calc_cnt_clr : in std_logic;
@@ -165,8 +175,9 @@ component buforout
 		bufout_trans : in std_logic;
 		status_index : in std_logic_vector ( 1 downto 0 );
 --OUTPUTS
-		raport : out std_logic_vector (7 downto 0 ); 
-		bufout_done : out std_logic
+		raport		: out std_logic_vector (7 downto 0 ); 
+		bufout_done : out std_logic;
+		send		: out std_logic
 	);
 end component;
 
@@ -190,13 +201,15 @@ begin
 			mod_passed1 => mod_passed1,
 			mod_passed2 => mod_passed2,
 			mod_passed3 => mod_passed3,	
+			sent => sent,
 			
 			flow_in	=> flow_in,
 			status_index => status_index,
 			calc_start => calc_start,
 			bufout_trans => bufout_trans,
 			bufout_send	=> bufout_send,
-			proc_mod => proc_mod
+			proc_mod => proc_mod,
+			busy => busy
 		);
 		
 	bufor_in: buforin 
@@ -205,6 +218,7 @@ begin
 			rst => rst,
 			data => data,
 			flow_in	=> flow_in,
+			sent => sent,
 			proc_mod => proc_mod,
 			data_index => data_index,
 			CRC_index => CRC_index,
@@ -254,10 +268,11 @@ begin
 			
 		bufout_done => bufout_done, 
 		status_index => status_index,
-		raport => raport
+		raport => raport,
+		send => sent
 		);
 		
-	
+	send <= sent;
 end structure;
 	
 	

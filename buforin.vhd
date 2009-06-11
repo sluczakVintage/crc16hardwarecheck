@@ -29,7 +29,8 @@ entity buforin is
 		data  : in std_logic_vector ( 7 downto 0 );
 		proc_mod : in  std_logic_vector ( 1 downto 0 );
 		flow_in : in std_logic; 
-
+		
+		sent	: in std_logic; -- oznacza, ze raport zostal juz wyslany
 		addr_calc_cnt_clr : in std_logic;
 		addr_calc_cnt_ena : in std_logic;
 		
@@ -230,9 +231,10 @@ component reg8
 		clk : in std_logic;
 		rst : in std_logic;
 		ena : in std_logic;
-		d : in std_logic_vector ( 7 downto 0 );
+		clr : in std_logic;
+		d 	: in std_logic_vector ( 7 downto 0 );
 		--OUTPUTS
-		q : out std_logic_vector ( 7 downto 0 )
+		q	: out std_logic_vector ( 7 downto 0 )
 		
 		
 	);
@@ -686,6 +688,7 @@ dmux_pack : dmux4x8
 			clk => clk,
 			rst => rst,
 			ena => enaRLM,
+			clr => sent,
 			d => sig0_head,
 			q => mod_count
 		);

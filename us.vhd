@@ -36,6 +36,8 @@ entity us is
 		mod_passed1 : in std_logic_vector ( 1 downto 0 );
 		mod_passed2 : in std_logic_vector ( 1 downto 0 );
 		mod_passed3 : in std_logic_vector ( 1 downto 0 );	
+		
+		sent		: in std_logic;
 		--------------------
 		--11 oznacza bezbledny przelot modulu
 		--10 oznacza przelot modulu z bledami dlugosci
@@ -47,7 +49,9 @@ entity us is
 		calc_start	: out std_logic;
 		bufout_trans: out std_logic;
 		bufout_send	: out std_logic;
-		proc_mod : out std_logic_vector ( 1 downto 0 )
+		proc_mod 	: out std_logic_vector ( 1 downto 0 );
+		
+		busy		: out std_logic := '0'
 	);
 end us;
 
@@ -79,24 +83,27 @@ type PROC_FSM_STATE_TYPE is (
 	);
 signal proc_fsb_reg, proc_fsb_next	: PROC_FSM_STATE_TYPE;	
 
+-- rejestry informacji o dostarczeniu modulu
 signal mod_passed0_reg, mod_passed1_reg, mod_passed2_reg, mod_passed3_reg : std_logic_vector ( 1 downto 0 );
-
-
-
+-- sygnaly sterujace
 signal flow, start_processing, send_bufout : std_logic;
 signal mod_processed, start_calc, start_comp, start_trans : std_logic;
-signal mod_trans, index_status  : std_logic_vector ( 1 downto 0 );
+signal mod_trans: std_logic_vector ( 1 downto 0 );
 
-signal status_index_reg, status_index_next : std_logic_vector ( 1 downto 0 );
+-- sygnaly ustalajace elementy raportu
+signal status_index_reg, status_index_next, index_status  : std_logic_vector ( 1 downto 0 );
 signal record_stat_ml, record_stat_crc, record_stat_ena : std_logic;
+-- sygnaly odpowiedzialne za to, zeby status modulu zostal zawsze przekazany do buforout
 signal bufout_trans_main, bufout_trans_proc : std_logic;
+
+
 begin
 
 
 
-	process(clk, rst, mod_pass0)
+	process(clk, rst, mod_pass0, sent)
 	begin
-		if(rst='1') then
+		if(rst='1') OR (sent = '1') then
 			mod_passed0_reg <= (others => '0');
 		elsif (rising_edge(clk) AND mod_pass0 = '1') then
 			mod_passed0_reg  <= mod_passed0;
@@ -104,9 +111,9 @@ begin
 	end process;
 	
 	
-	process(clk, rst, mod_pass1)
+	process(clk, rst, mod_pass1, sent)
 	begin
-		if(rst='1') then
+		if(rst='1') OR (sent = '1') then
 			mod_passed1_reg <= (others => '0');
 		elsif (rising_edge(clk) AND mod_pass1 = '1') then
 			mod_passed1_reg  <= mod_passed1;
@@ -114,9 +121,9 @@ begin
 	end process;
 	
 	
-	process(clk, rst, mod_pass2)
+	process(clk, rst, mod_pass2, sent)
 	begin
-		if(rst='1') then
+		if(rst='1') OR (sent = '1') then
 			mod_passed2_reg <= (others => '0');
 		elsif (rising_edge(clk) AND mod_pass2 = '1') then
 			mod_passed2_reg  <= mod_passed2;
@@ -124,9 +131,9 @@ begin
 	end process;
 	
 	
-	process(clk, rst, mod_pass3)
+	process(clk, rst, mod_pass3, sent)
 	begin
-		if(rst='1') then
+		if(rst='1') OR (sent = '1') then
 			mod_passed3_reg <= (others => '0');
 		elsif (rising_edge(clk) AND mod_pass3 = '1') then
 			mod_passed3_reg  <= mod_passed3;
@@ -154,6 +161,8 @@ begin
 	record_stat_ml <= '0';
 	bufout_trans_main <= '0';
 	
+	busy <= '0';
+	
 	case main_fsb_reg is
 	
 		when main_fsb_idle =>   -- jesli dane wchodza, zacznij je odbierac, inaczej czekaj
@@ -165,6 +174,7 @@ begin
 			end if;
 			
 		when main_fsb_receive => -- jesli dane z pierwszego pakietu juz zostaly odebrane, zacznij je przetwarzac
+			busy <= '1';
 			if mod_passed0_reg = "11" then
 				main_fsb_next <= main_fsb_proc0;
 			elsif mod_passed0_reg = "10" then
@@ -181,6 +191,7 @@ begin
 			end if;
 			
 		when main_fsb_proc0 => -- jesli dane z pierwszego pakietu zostaly odebrane, czekaj na zakonczenie przetwarzania
+			busy <= '1';
 			if mod_processed = '1' then
 				if mod_count = "00" then
 					main_fsb_next <= main_fsb_send;
@@ -194,6 +205,7 @@ begin
 			end if;
 			
 		when main_fsb_busy0 => -- jesli dane przetworzone, rozpocznij przetwarzanie nastepnych
+			busy <= '1';
 			if mod_passed1_reg = "11" then
 				main_fsb_next <= main_fsb_proc1;
 			elsif mod_passed1_reg = "10" then
@@ -209,6 +221,7 @@ begin
 			end if;
 			
 		when main_fsb_proc1 => -- jesli dane z pierwszego pakietu zostaly odebrane, czekaj na zakonczenie przetwarzania
+			busy <= '1';
 			if mod_processed = '1' then
 				if mod_count = "01" then
 					main_fsb_next <= main_fsb_send;
@@ -222,6 +235,7 @@ begin
 			end if;
 			
 		when main_fsb_busy1 => -- jesli dane przetworzone, rozpocznij przetwarzanie nastepnych
+			busy <= '1';
 			if mod_passed2_reg = "11" then
 				main_fsb_next <= main_fsb_proc2;
 			elsif mod_passed2_reg = "10" then
@@ -237,6 +251,7 @@ begin
 			end if;
 			
 		when main_fsb_proc2 => -- jesli dane z pierwszego pakietu zostaly odebrane, czekaj na zakonczenie przetwarzania
+			busy <= '1';
 			if mod_processed = '1' then
 				if mod_count = "10" then
 					main_fsb_next <= main_fsb_send;
@@ -250,6 +265,7 @@ begin
 			end if;
 			
 		when main_fsb_busy2 => -- jesli dane przetworzone, rozpocznij przetwarzanie nastepnych
+			busy <= '1';
 			if mod_passed3_reg = "11" then
 				main_fsb_next <= main_fsb_proc3;
 			elsif mod_passed3_reg = "10" then
@@ -265,6 +281,7 @@ begin
 			end if;
 			
 		when main_fsb_proc3 => -- jesli dane z pierwszego pakietu zostaly odebrane, czekaj na zakonczenie przetwarzania
+			busy <= '1';
 			if mod_processed = '1' then
 				main_fsb_next <= main_fsb_send;
 			else
@@ -274,8 +291,10 @@ begin
 			end if;
 			
 		when main_fsb_send => -- jesli buforout gotowy, rozpocznij wysylanie
-				main_fsb_next <= main_fsb_idle;
-				bufout_send <= '1'; -- zacznij przesylanie
+			main_fsb_next <= main_fsb_idle;
+			busy <= '0';
+			bufout_send <= '1'; -- zacznij przesylanie
+			
 	end case;
 end process;
 

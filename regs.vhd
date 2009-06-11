@@ -23,6 +23,7 @@ entity reg8 is
 		clk : in std_logic;
 		rst : in std_logic;
 		ena : in std_logic;
+		clr : in std_logic;
 		d : in std_logic_vector ( 7 downto 0 );
 		
 
@@ -38,9 +39,9 @@ architecture data_flow of reg8 is
 	signal q_reg, q_next : std_logic_vector ( 7 downto 0 );
 
 begin
-	process(clk, rst)
+	process(clk, rst, clr)
 	begin
-		if(rst='1') then
+		if(rst='1') OR (clr='1') then
 			q_reg <= (others => '0');
 		elsif rising_edge(clk) then
 			q_reg <= q_next;
@@ -57,46 +58,47 @@ end data_flow;
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
-
---Rejestr 2bit
-entity reg2 is
-	port
-	(
-	
-		--INPUTS
-		clk : in std_logic;
-		rst : in std_logic;
-		ena : in std_logic;
-		d : in std_logic_vector ( 1 downto 0 );
-		
-
-		--OUTPUTS
-		q : out std_logic_vector ( 1 downto 0 )
-		
-	);
-end reg2;
-
-
-architecture data_flow of reg2 is
-
-	signal q_reg, q_next : std_logic_vector ( 1 downto 0 );
-
-begin
-	process(clk, rst)
-	begin
-		if(rst='1') then
-			q_reg <= (others => '0');
-		elsif rising_edge(clk) then
-			q_reg <= q_next;
-		end if;
-	end process;
-	
-	q_next <= d when ena = '1' else
-			q_reg;
-			
-	q <= q_reg;
-	
-end data_flow;
+--
+----Rejestr 2bit
+--entity reg2 is
+--	port
+--	(
+--	
+--		--INPUTS
+--		clk : in std_logic;
+--		rst : in std_logic;
+--		ena : in std_logic;
+--		clr : in std_logic;
+--		d : in std_logic_vector ( 1 downto 0 );
+--		
+--
+--		--OUTPUTS
+--		q : out std_logic_vector ( 1 downto 0 )
+--		
+--	);
+--end reg2;
+--
+--
+--architecture data_flow of reg2 is
+--
+--	signal q_reg, q_next : std_logic_vector ( 1 downto 0 );
+--
+--begin
+--	process(clk, rst, clr)
+--	begin
+--		if(rst='1') OR (clr = '1') then
+--			q_reg <= (others => '0');
+--		elsif rising_edge(clk) then
+--			q_reg <= q_next;
+--		end if;
+--	end process;
+--	
+--	q_next <= d when ena = '1' else
+--			q_reg;
+--			
+--	q <= q_reg;
+--	
+--end data_flow;
 
 library ieee;
 use ieee.std_logic_1164.all;

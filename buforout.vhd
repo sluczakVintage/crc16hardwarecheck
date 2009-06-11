@@ -28,7 +28,8 @@ entity buforout is
 	
 --OUTPUTS
 		raport : out std_logic_vector (7 downto 0 ); 
-		bufout_done : out std_logic
+		bufout_done : out std_logic;
+		send		: out std_logic
 		
 	);
 end buforout;
@@ -41,7 +42,8 @@ architecture data_flow of buforout is
 type BUFOUT_FSM_STATE_TYPE is (
 	bufout_idle,				--- stan spoczynkowy
 	bufout_receiving,			--- stan odbierania danych 
-	bufout_sending				--- stan wysy³ania raportu
+	bufout_sending,				--- stan wysy³ania raportu
+	bufout_clearing
 	);
 
 signal bufout_fsb_cur, bufout_fsb_next	: BUFOUT_FSM_STATE_TYPE; --- sygna³y automatu bufout
@@ -97,6 +99,7 @@ process(bufout_fsb_cur, bufout_trans, bufout_send)
 		enable <= '0';
 		clear <= '0';
 		done_bufout <= '0';
+		send <= '0';
 		
 		case bufout_fsb_cur is
 			
@@ -114,8 +117,13 @@ process(bufout_fsb_cur, bufout_trans, bufout_send)
 					bufout_fsb_next <= bufout_idle;
 
 			when bufout_sending =>
+				bufout_fsb_next <= bufout_clearing;
+				send <= '1';  
+				
+			when bufout_clearing =>
 				bufout_fsb_next <= bufout_idle;
-			--	clear <= '1';  -- póki co nie czyscimy rejestru po zakonczeniu liczenia.
+				clear <= '1';
+				
 		end case;				
 			
 	end process;
