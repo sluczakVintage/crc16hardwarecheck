@@ -112,7 +112,7 @@ signal addr_flow_cnt_clr, addr_cnt_clr0, addr_cnt_clr1, addr_cnt_clr2, addr_cnt_
 signal addr_flow_cnt_ena, addr_cnt_ena0, addr_cnt_ena1, addr_cnt_ena2, addr_cnt_ena3  : std_logic;
 signal trans_mod : std_logic_vector ( 1 downto 0 );
 
-
+signal data_reg : std_logic_vector ( 7 downto 0 );
 
 -----------------------------------
 -- UBER mega flow control bit2bit
@@ -151,8 +151,6 @@ component flowcontrol
 		addr_flow_cnt_clr : out std_logic;
 		addr_flow_cnt_ena : out std_logic;
 		trans_mod : out  std_logic_vector ( 1 downto 0 );
-
-
 		
 		mod_pass0	: out std_logic;
 		mod_pass1	: out std_logic;
@@ -260,6 +258,19 @@ end component;
 ------------------------------------------------- BEGIN
 ----------------------------------------------
 begin
+
+-------------------------
+--- Rejestr danych wejœciowych
+-------------------------
+
+	process (clk, rst)
+	begin
+		if rst = '1' then 
+				data_reg <= ( others => '0' );
+		elsif rising_edge(clk) then
+				data_reg <= data;
+		end if;
+	end process;
 -- Opis dzialania licznika adresow RAM
 -------------------------
 ----------------Licznik 0
@@ -385,7 +396,7 @@ addr_cnt_ena3 <= '1' when ((addr_flow_cnt_ena = '1') AND ( trans_mod = "11")) OR
 		clk => clk,		
 		rst	=> rst,		
 		flow_in	=> flow_in,	
-		data => data, 	
+		data => data_reg, 	
 		ml_reg => ml_reg,
 	
 		enable_MAINdmux => enable_MAINdmux, 
@@ -428,7 +439,7 @@ addr_cnt_ena3 <= '1' when ((addr_flow_cnt_ena = '1') AND ( trans_mod = "11")) OR
 -------------------------------------
 	dmux_main : dmux2x8
 		port map ( 
-			input => data,
+			input => data_reg,
 			sel => enable_MAINdmux,
 			o1 => sig0_main, 
 			o2 => sig1_main
