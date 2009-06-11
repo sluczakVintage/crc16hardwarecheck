@@ -153,7 +153,7 @@ begin
 			when calc_store =>
 				cnt_ena <= '1';
 				data_to_process <= ( others => '0' );
-				if cnt_reg = "1011" then 
+				if cnt_reg = "1011" then --- dalej nie wiadomo po ilu bitach ustala siê prawid³owa wartoœæ crc, gdy¿ wszelkie inne kalkulatory crc dla 0x8005 podaj¹ zupe³nie inne wyniki...
 					calc_fsb_next <= calc_processed;
 				else
 					calc_fsb_next <= calc_store;
