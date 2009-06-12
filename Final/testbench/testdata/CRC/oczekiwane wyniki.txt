@@ -1,0 +1,4 @@
+Modul 1 CRC error
+Modul 2 CRC error
+Modul 3 OK
+Modul 4 OK
