@@ -46,7 +46,7 @@ type BUFOUT_FSM_STATE_TYPE is (
 	bufout_clearing
 	);
 
-signal bufout_fsb_cur, bufout_fsb_next	: BUFOUT_FSM_STATE_TYPE; --- sygna³y automatu bufout
+signal bufout_fsb_reg, bufout_fsb_next	: BUFOUT_FSM_STATE_TYPE; --- sygna³y automatu bufout
 
 signal ready_bufout, done_bufout : std_logic; 		--sygna³y do komunikacji miêdzy bufout a us
 
@@ -86,22 +86,22 @@ begin
 process (clk, rst)
 	begin
 		if rst = '1' then
-			bufout_fsb_cur <= bufout_idle;	
+			bufout_fsb_reg <= bufout_idle;	
 		elsif rising_edge(clk) then
-			bufout_fsb_cur <= bufout_fsb_next;
+			bufout_fsb_reg <= bufout_fsb_next;
 		end if;
 	end process;
 
 
 
-process(bufout_fsb_cur, bufout_trans, bufout_send)
+process(bufout_fsb_reg, bufout_trans, bufout_send)
 	begin
 		enable <= '0';
 		clear <= '0';
 		done_bufout <= '0';
 		send <= '0';
 		
-		case bufout_fsb_cur is
+		case bufout_fsb_reg is
 			
 			when bufout_idle => 	
 					if bufout_trans = '1' then
@@ -112,12 +112,13 @@ process(bufout_fsb_cur, bufout_trans, bufout_send)
 						bufout_fsb_next <= bufout_idle;		
 					end if;		
 			when bufout_receiving =>			
+					bufout_fsb_next <= bufout_idle;
 					done_bufout <= '1';
 					enable <= '1';
-					bufout_fsb_next <= bufout_idle;
 
 			when bufout_sending =>
 				bufout_fsb_next <= bufout_clearing;
+				done_bufout <= '1';
 				send <= '1';  
 				
 			when bufout_clearing =>

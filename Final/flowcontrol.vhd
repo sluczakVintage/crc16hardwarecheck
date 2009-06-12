@@ -98,7 +98,7 @@ type FLOW_FSM_STATE_TYPE is (
 	flow_eop
 	);
 	
-signal flow_fsm_reg, flow_fsm_next	: FLOW_FSM_STATE_TYPE;
+signal flow_fsb_reg, flow_fsb_next	: FLOW_FSM_STATE_TYPE;
 
 
 
@@ -135,196 +135,196 @@ begin
 process (clk, rst)
 	begin
 		if rst = '1' then
-			flow_fsm_reg <= flow_idle;	
+			flow_fsb_reg <= flow_idle;	
 		elsif rising_edge(clk) then
-			flow_fsm_reg <= flow_fsm_next;
+			flow_fsb_reg <= flow_fsb_next;
 		end if;
 end process;
 
 	-- Funkcja przejsc-wyjsc
-process(flow_fsm_reg, flow_in, cnt_reg, data)
+process(flow_fsb_reg, flow_in, cnt_reg, data)
 	begin
 		cnt_clr <= '0';
 		cnt_ena <= '1';
 
-		case flow_fsm_reg is
+		case flow_fsb_reg is
 			when flow_idle =>			
 				cnt_clr <= '1';
 				if flow_in = '0' then 	
-					flow_fsm_next <= flow_idle;				
+					flow_fsb_next <= flow_idle;				
 				else 
 					if data = "00000010" then
-						flow_fsm_next <= flow_sop;
+						flow_fsb_next <= flow_sop;
 					else
-						flow_fsm_next <= flow_idle;
+						flow_fsb_next <= flow_idle;
 					end if;
 				end if; 
 					
 			when flow_sop => 
 			-- 8bit						
 					cnt_clr <= '1';
-					flow_fsm_next <= flow_header_rlm;
+					flow_fsb_next <= flow_header_rlm;
 
 				
 			when flow_header_rlm =>
 					cnt_clr <= '1';
-					flow_fsm_next <= flow_header_rdm0;
+					flow_fsb_next <= flow_header_rdm0;
 				
 			when flow_header_rdm0 =>
 					cnt_ena <= '1';
 				if cnt_reg = 1 then -- 16bit
 					cnt_clr <= '1';
-					flow_fsm_next <= flow_header_rdm1;
+					flow_fsb_next <= flow_header_rdm1;
 				else 
-					flow_fsm_next <= flow_header_rdm0;
+					flow_fsb_next <= flow_header_rdm0;
 				end if;
 				
 			when flow_header_rdm1 =>
 					cnt_ena <= '1';
 				if cnt_reg = 1 then -- 16bit
 					cnt_clr <= '1';
-					flow_fsm_next <= flow_header_rdm2;				
+					flow_fsb_next <= flow_header_rdm2;				
 				else 
-					flow_fsm_next <= flow_header_rdm1;
+					flow_fsb_next <= flow_header_rdm1;
 				end if;
 				
 			when flow_header_rdm2 =>
 					cnt_ena <= '1';
 				if cnt_reg = 1 then -- 16bit
 					cnt_clr <= '1';
-					flow_fsm_next <= flow_header_rdm3;
+					flow_fsb_next <= flow_header_rdm3;
 				else 
-					flow_fsm_next <= flow_header_rdm2;
+					flow_fsb_next <= flow_header_rdm2;
 				end if;
 				
 			when flow_header_rdm3 =>
 					cnt_ena <= '1';
 				if cnt_reg = 1 then -- 16bit
 					cnt_clr <= '1';
-					flow_fsm_next <= flow_eoh;
+					flow_fsb_next <= flow_eoh;
 				else 
-					flow_fsm_next <= flow_header_rdm3;
+					flow_fsb_next <= flow_header_rdm3;
 				end if; 	
 				
 			when flow_eoh =>
 							-- 8bit
 					if data = "00000110" then
 						cnt_clr <= '1';
-						flow_fsm_next <= flow_crc0;	
+						flow_fsb_next <= flow_crc0;	
 					else
-							flow_fsm_next <= flow_idle;
+							flow_fsb_next <= flow_idle;
 					end if;
 
 			when flow_crc0 =>
 					cnt_ena <= '1';
 				if cnt_reg = 1 then -- 16bit
 					cnt_clr <= '1';
-					flow_fsm_next <= flow_data0;
+					flow_fsb_next <= flow_data0;
 				else 
-					flow_fsm_next <= flow_crc0;
+					flow_fsb_next <= flow_crc0;
 				end if; 
 		
 			when flow_data0 => 
 					cnt_ena <= '1';
 				if data = "00000011" then	
-					flow_fsm_next <= flow_eom0;
+					flow_fsb_next <= flow_eom0;
 				else 
 					if cnt_reg = 1024 then --8296bit
-						flow_fsm_next <= flow_idle;
+						flow_fsb_next <= flow_idle;
 					else 
-						flow_fsm_next <= flow_data0;
+						flow_fsb_next <= flow_data0;
 					end if;
 				end if; 
 				
 			when flow_eom0 => -- 16bit
 					cnt_clr <= '1';
-					flow_fsm_next <= flow_crc1;
+					flow_fsb_next <= flow_crc1;
 					
 			when flow_crc1 =>
 					cnt_ena <= '1';
 				if cnt_reg = 1 then -- 16bit
 					cnt_clr <= '1';
-					flow_fsm_next <= flow_data1;
+					flow_fsb_next <= flow_data1;
 				else 
-					flow_fsm_next <= flow_crc1;
+					flow_fsb_next <= flow_crc1;
 				end if; 	
 				
 			when flow_data1 =>
 					cnt_ena <= '1';
 				if data = "00000011" then		
-					flow_fsm_next <= flow_eom1;
+					flow_fsb_next <= flow_eom1;
 				else 
 					if cnt_reg = 1024  then --16504bit
-						flow_fsm_next <= flow_idle;
+						flow_fsb_next <= flow_idle;
 					else
-						flow_fsm_next <= flow_data1;
+						flow_fsb_next <= flow_data1;
 					end if;
 				end if; 	
 				
 			when flow_eom1 => -- 16bit
 					cnt_clr <= '1';
-					flow_fsm_next <= flow_crc2;
+					flow_fsb_next <= flow_crc2;
 					
 			when flow_crc2 =>
 					cnt_ena <= '1';
 				if cnt_reg = 1 then -- 16bit
 					cnt_clr <= '1';
-					flow_fsm_next <= flow_data2;
+					flow_fsb_next <= flow_data2;
 				else 
-					flow_fsm_next <= flow_crc2;
+					flow_fsb_next <= flow_crc2;
 				end if; 	
 				
 			when flow_data2 =>
 					cnt_ena <= '1';
 				if data = "00000011" then		
-					flow_fsm_next <= flow_eom2;
+					flow_fsb_next <= flow_eom2;
 				else 
 					if cnt_reg = 1024 then --24712bit
-						flow_fsm_next <= flow_idle;
+						flow_fsb_next <= flow_idle;
 					else
-						flow_fsm_next <= flow_data2;
+						flow_fsb_next <= flow_data2;
 					end if;
 				end if; 	
 				
 			when flow_eom2 => -- 16bit
 					cnt_clr <= '1';
-					flow_fsm_next <= flow_crc3;
+					flow_fsb_next <= flow_crc3;
 					
 			when flow_crc3 => -- 16bit
 					cnt_ena <= '1';
 				if cnt_reg = 1 then --24728bit
 					cnt_clr <= '1';
-					flow_fsm_next <= flow_data3;
+					flow_fsb_next <= flow_data3;
 				else 
-					flow_fsm_next <= flow_crc3;
+					flow_fsb_next <= flow_crc3;
 				end if; 	
 				
 			when flow_data3 => 
 					cnt_ena <= '1';
 				if data = "00000011" then
-					flow_fsm_next <= flow_eom3;
+					flow_fsb_next <= flow_eom3;
 				else 
 					if cnt_reg = 1024 then --32920bit
-						flow_fsm_next <= flow_idle;
+						flow_fsb_next <= flow_idle;
 					else
-						flow_fsm_next <= flow_data3;
+						flow_fsb_next <= flow_data3;
 					end if;
 				end if; 	
 				
 			when flow_eom3 => -- 16bit
 					cnt_clr <= '1';
-					flow_fsm_next <= flow_eop;
+					flow_fsb_next <= flow_eop;
 					
 			when flow_eop => -- 16bit
 				if data = "00000100" then
-					flow_fsm_next <= flow_idle;
+					flow_fsb_next <= flow_idle;
 				else 
-					flow_fsm_next <= flow_eop;
+					flow_fsb_next <= flow_eop;
 				end if; 
 		end case;
 	end process;
 
-	process(flow_fsm_reg, cnt_reg, ml_reg)
+	process(flow_fsb_reg, cnt_reg, ml_reg)
 		begin
 					
 			enable_MAINdmux <= (others => '0');
@@ -365,7 +365,7 @@ process(flow_fsm_reg, flow_in, cnt_reg, data)
 			mod_passed2 <= "00";
 			mod_passed3 <= "00";
 					
-		case flow_fsm_reg is
+		case flow_fsb_reg is
 		
 			when flow_idle => 
 					

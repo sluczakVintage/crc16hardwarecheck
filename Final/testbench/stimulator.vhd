@@ -49,95 +49,94 @@ begin
 		variable eom : integer := 0;
 	   
 	begin
-		receive <= '0';
+		while NOT endfile(stimulus) loop
+			receive <= '0';
+			if (busy = '0') then
+				receive <= '1';
+				wait until clk = '1';
+		-- SOP	
+				readline(stimulus, l);
+				read(l, c);
+				intch := character'pos(c);
+				data <= std_logic_vector( to_unsigned(intch,8) );
+				wait until clk = '1';
+				read(l, c);
+				intch := character'pos(c);
+				data <= std_logic_vector( to_unsigned(intch,8) );
+				wait until clk = '1';
 
-		if (busy = '0') then
-			receive <= '1';
-			wait until clk = '1';
-	-- SOP	
-			readline(stimulus, l);
-			read(l, c);
-			intch := character'pos(c);
-			data <= std_logic_vector( to_unsigned(intch,8) );
-			wait until clk = '1';
-			read(l, c);
-			intch := character'pos(c);
-			data <= std_logic_vector( to_unsigned(intch,8) );
-			wait until clk = '1';
-
-	-- LICZBA MODULOW		
-			readline(stimulus, l);
-			read(l, s);
-			data <= to_std_logic_vector(s);
-			module_number := to_integer(unsigned(to_std_logic_vector(s)));
-			wait until clk = '1';
-			
-	-- DLUGOSCI MODULOW
-			for i in 0 to 3 loop 
+		-- LICZBA MODULOW		
 				readline(stimulus, l);
 				read(l, s);
 				data <= to_std_logic_vector(s);
-				wait until clk = '1';
-				read(l, s);
-				data <= to_std_logic_vector(s);
-				wait until clk = '1';
-			end loop;
-			
-	-- EOH		
-			readline(stimulus, l);
-			read(l, c);
-			intch := character'pos(c);
-			data <= std_logic_vector( to_unsigned(intch,8) );
-			wait until clk = '1';
-		  
-			for i in 0 to module_number loop
-			--CRC
-				print("I@FILE_READ: Jestem w petli module_number " & str(i) );
-				readline(stimulus, l);
-				read(l, s);
-				data <= to_std_logic_vector(s);
+				module_number := to_integer(unsigned(to_std_logic_vector(s)));
 				wait until clk = '1';
 				
-				read(l, s);
-				data <= to_std_logic_vector(s);
-				wait until clk = '1';
-			--DATA			
-				eom := 0;
+		-- DLUGOSCI MODULOW
+				for i in 0 to 3 loop 
+					readline(stimulus, l);
+					read(l, s);
+					data <= to_std_logic_vector(s);
+					wait until clk = '1';
+					read(l, s);
+					data <= to_std_logic_vector(s);
+					wait until clk = '1';
+				end loop;
+				
+		-- EOH		
 				readline(stimulus, l);
-				while (eom = 0) loop
-					read(l, c);
-					intch := character'pos(c);
-					data <= std_logic_vector( to_unsigned(intch,8) );
-					--print("I@FILE_READ: Char " & str(character'pos(c)) & " " & str(intch) & " " & str(std_logic_vector( to_unsigned(intch,8) )));
-					if std_logic_vector( to_unsigned(intch,8) ) = "00000011" then
-						wait until clk = '1';
+				read(l, c);
+				intch := character'pos(c);
+				data <= std_logic_vector( to_unsigned(intch,8) );
+				wait until clk = '1';
+			  
+				for i in 0 to module_number loop
+				--CRC
+				--	print("I@FILE_READ: Jestem w petli module_number " & str(i) );
+					readline(stimulus, l);
+					read(l, s);
+					data <= to_std_logic_vector(s);
+					wait until clk = '1';
+					
+					read(l, s);
+					data <= to_std_logic_vector(s);
+					wait until clk = '1';
+				--DATA			
+					eom := 0;
+					readline(stimulus, l);
+					while (eom = 0) loop
 						read(l, c);
 						intch := character'pos(c);
 						data <= std_logic_vector( to_unsigned(intch,8) );
-						eom := 1;
-					else
-						eom := 0;
-					end if;
-					--print("I@FILE_READ: Jestem w petli eom " & str(eom));
-					wait until clk = '1';
-				end loop; 
+						--print("I@FILE_READ: Char " & str(character'pos(c)) & " " & str(intch) & " " & str(std_logic_vector( to_unsigned(intch,8) )));
+						if std_logic_vector( to_unsigned(intch,8) ) = "00000011" then
+							wait until clk = '1';
+							read(l, c);
+							intch := character'pos(c);
+							data <= std_logic_vector( to_unsigned(intch,8) );
+							eom := 1;
+						else
+							eom := 0;
+						end if;
+						--print("I@FILE_READ: Jestem w petli eom " & str(eom));
+						wait until clk = '1';
+					end loop; 
+					
+				end loop;
 				
-			end loop;
+				readline(stimulus, l);
+				read(l, c);
+				intch := character'pos(c);
+				data <= std_logic_vector( to_unsigned(intch,8) );
+				
 			
-			readline(stimulus, l);
-			read(l, c);
-			intch := character'pos(c);
-			data <= std_logic_vector( to_unsigned(intch,8) );
-			
-		
-			print("I@FILE_READ: Koniec odczytu pliku "& stim_file );
+				print("I@FILE_READ: Koniec odczytu pakietu z "& stim_file );			
+			else
 			wait until clk = '1';
-			receive <= '0';
-			wait;
-		else
-		
-		end if;
-		
+			end if;
+		end loop;
+		print("I@FILE_READ: Koniec odczytu z pliku "& stim_file );
+		wait;
 	end process stimul;
 
 	

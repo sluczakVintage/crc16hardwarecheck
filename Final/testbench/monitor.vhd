@@ -38,6 +38,7 @@ begin
 	monit: process (sent, raport)
 	
   variable l: line;
+  variable k: integer := 0;
   variable rap : std_logic_vector ( 7 downto 0 );
 	begin
 	  if sent = '1' then
@@ -60,8 +61,8 @@ begin
 		
 		print(monfile, " ");
 		print(monfile, "%____________");
-		  
-  	  	print("I@FILE_WRITE: RAPORT ZAPISANY");
+		k := (k + 1); 
+  	  	print("I@FILE_WRITE: RAPORT " & str(k) & " ZAPISANY");
 		else
 		 
 		end if; 

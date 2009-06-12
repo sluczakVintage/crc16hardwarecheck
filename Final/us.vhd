@@ -96,6 +96,8 @@ signal record_stat_ml, record_stat_crc, record_stat_ena : std_logic;
 -- sygnaly odpowiedzialne za to, zeby status modulu zostal zawsze przekazany do buforout
 signal bufout_trans_main, bufout_trans_proc : std_logic;
 
+-- rejestr sygna³u zajêtoœci
+signal busy_next : std_logic;
 
 begin
 
@@ -140,6 +142,15 @@ begin
 		end if;
 	end process;
 
+	process(clk, rst, busy_next)
+	begin
+		if rst='1' then
+			busy <= '0';
+		elsif rising_edge(clk) then
+			busy  <= busy_next;
+		end if;
+	end process;
+	
 
 -- Opis dzialania automatu glownego
 	process (clk, rst)
@@ -161,7 +172,7 @@ begin
 	record_stat_ml <= '0';
 	bufout_trans_main <= '0';
 	
-	busy <= '0';
+	busy_next <= '0';
 	
 	case main_fsb_reg is
 	
@@ -174,7 +185,7 @@ begin
 			end if;
 			
 		when main_fsb_receive => -- jesli dane z pierwszego pakietu juz zostaly odebrane, zacznij je przetwarzac
-			busy <= '1';
+			busy_next <= '1';
 			if mod_passed0_reg = "11" then
 				main_fsb_next <= main_fsb_proc0;
 			elsif mod_passed0_reg = "10" then
@@ -191,7 +202,7 @@ begin
 			end if;
 			
 		when main_fsb_proc0 => -- jesli dane z pierwszego pakietu zostaly odebrane, czekaj na zakonczenie przetwarzania
-			busy <= '1';
+			busy_next <= '1';
 			if mod_processed = '1' then
 				if mod_count = "00" then
 					main_fsb_next <= main_fsb_send;
@@ -205,7 +216,7 @@ begin
 			end if;
 			
 		when main_fsb_busy0 => -- jesli dane przetworzone, rozpocznij przetwarzanie nastepnych
-			busy <= '1';
+			busy_next <= '1';
 			if mod_passed1_reg = "11" then
 				main_fsb_next <= main_fsb_proc1;
 			elsif mod_passed1_reg = "10" then
@@ -221,7 +232,7 @@ begin
 			end if;
 			
 		when main_fsb_proc1 => -- jesli dane z pierwszego pakietu zostaly odebrane, czekaj na zakonczenie przetwarzania
-			busy <= '1';
+			busy_next <= '1';
 			if mod_processed = '1' then
 				if mod_count = "01" then
 					main_fsb_next <= main_fsb_send;
@@ -235,7 +246,7 @@ begin
 			end if;
 			
 		when main_fsb_busy1 => -- jesli dane przetworzone, rozpocznij przetwarzanie nastepnych
-			busy <= '1';
+			busy_next <= '1';
 			if mod_passed2_reg = "11" then
 				main_fsb_next <= main_fsb_proc2;
 			elsif mod_passed2_reg = "10" then
@@ -251,7 +262,7 @@ begin
 			end if;
 			
 		when main_fsb_proc2 => -- jesli dane z pierwszego pakietu zostaly odebrane, czekaj na zakonczenie przetwarzania
-			busy <= '1';
+			busy_next <= '1';
 			if mod_processed = '1' then
 				if mod_count = "10" then
 					main_fsb_next <= main_fsb_send;
@@ -265,7 +276,7 @@ begin
 			end if;
 			
 		when main_fsb_busy2 => -- jesli dane przetworzone, rozpocznij przetwarzanie nastepnych
-			busy <= '1';
+			busy_next <= '1';
 			if mod_passed3_reg = "11" then
 				main_fsb_next <= main_fsb_proc3;
 			elsif mod_passed3_reg = "10" then
@@ -281,7 +292,7 @@ begin
 			end if;
 			
 		when main_fsb_proc3 => -- jesli dane z pierwszego pakietu zostaly odebrane, czekaj na zakonczenie przetwarzania
-			busy <= '1';
+			busy_next <= '1';
 			if mod_processed = '1' then
 				main_fsb_next <= main_fsb_send;
 			else
@@ -291,9 +302,13 @@ begin
 			end if;
 			
 		when main_fsb_send => -- jesli buforout gotowy, rozpocznij wysylanie
-			main_fsb_next <= main_fsb_idle;
-			busy <= '0';
-			bufout_send <= '1'; -- zacznij przesylanie
+			busy_next <= '1';
+			if bufout_done = '0' then
+				main_fsb_next <= main_fsb_idle;
+				bufout_send <= '1'; -- zacznij przesylanie
+			else
+				main_fsb_next <= main_fsb_send;
+			end if;
 			
 	end case;
 end process;
