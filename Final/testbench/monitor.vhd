@@ -43,7 +43,8 @@ begin
 	begin
 	  if sent = '1' then
 		rap := raport;
-		print(monfile, "% raport log ");
+		k := (k + 1); 
+		print(monfile, "% raport log pakietu " & str(k));
 		print(monfile, "%____________");
 		print(monfile, " ");
 		print(monfile, "Otrzymany raport: " & str(rap));
@@ -61,7 +62,6 @@ begin
 		
 		print(monfile, " ");
 		print(monfile, "%____________");
-		k := (k + 1); 
   	  	print("I@FILE_WRITE: RAPORT " & str(k) & " ZAPISANY");
 		else
 		 

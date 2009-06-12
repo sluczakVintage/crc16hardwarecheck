@@ -336,7 +336,7 @@ R11
 !s100 7d:O_c5QD1Y35J_BkJ<gZ1
 Emonitor
 Z43 !s101 -O0 -O0 -O0 -O0 -O0 -O0 -O0 -O0 -O0 -O0 -O0 -O0
-Z44 w1244835889
+Z44 w1244848912
 Z45 DPx4 work 9 text_util 0 22 giz=3@@RhAoLVOm]KG>_R3
 R34
 R2
@@ -348,30 +348,30 @@ Z47 FF:/workspaces/Quartus/Final/testbench/monitor.vhd
 l0
 L21
 V563QSG@Ge:LC36H9RF3]51
+!s100 inFkQ<g8d9Jc9AOTYkVKI1
 R8
 R43
 32
 R10
 R11
-!s100 inFkQ<g8d9Jc9AOTYkVKI1
 Abehavior
 R45
 R34
 R2
 R3
 R4
-DEx4 work 7 monitor 0 22 563QSG@Ge:LC36H9RF3]51
+Z48 DEx4 work 7 monitor 0 22 563QSG@Ge:LC36H9RF3]51
 l35
 L31
-V<iFM=ZSM3^c_8iIKm5b063
-!s100 h49m7i`F5a;W35JPKXifi3
+VDBe1G]DdSTaS8l``WNAma0
+!s100 j57g2ca4f[9Ti;<999Od03
 R8
 32
-Z48 Mx5 4 ieee 14 std_logic_1164
-Mx4 4 ieee 18 std_logic_unsigned
-Mx3 4 ieee 15 std_logic_arith
-Z49 Mx2 3 std 6 textio
-Z50 Mx1 4 work 9 text_util
+Z49 Mx5 4 ieee 14 std_logic_1164
+Z50 Mx4 4 ieee 18 std_logic_unsigned
+Z51 Mx3 4 ieee 15 std_logic_arith
+Z52 Mx2 3 std 6 textio
+Z53 Mx1 4 work 9 text_util
 R10
 R11
 Emux4x16
@@ -472,16 +472,16 @@ R15
 R4
 R1
 R5
-Z51 8F:/workspaces/Quartus/Final/PCK_CRC16_D8.vhd
-Z52 FF:/workspaces/Quartus/Final/PCK_CRC16_D8.vhd
+Z54 8F:/workspaces/Quartus/Final/PCK_CRC16_D8.vhd
+Z55 FF:/workspaces/Quartus/Final/PCK_CRC16_D8.vhd
 l0
 L22
 V7N^eRMHcTHz;i9n8T2zKm2
 R8
-Z53 !s101 -O0 -O0 -O0 -O0
+Z56 !s101 -O0 -O0 -O0 -O0
 32
 b1
-Z54 Mx1 4 ieee 14 std_logic_1164
+Z57 Mx1 4 ieee 14 std_logic_1164
 R10
 R11
 !s100 0`E;=j7dDM>hUzOoe<lP;2
@@ -493,23 +493,23 @@ L33
 V9_9n2Ok?38GVzeNbmHVUk3
 R8
 32
-R54
+R57
 R10
 R11
 nbody
 !s100 OLmn5TR;]cgZ?IS7OcWLT0
 Eram
-R53
+R56
 R1
 R4
 R5
-Z55 8F:/workspaces/Quartus/Final/ram.vhd
-Z56 FF:/workspaces/Quartus/Final/ram.vhd
+Z58 8F:/workspaces/Quartus/Final/ram.vhd
+Z59 FF:/workspaces/Quartus/Final/ram.vhd
 l0
 L42
 VNLY[ZA@oPg1<V=SBHPW=f0
 R8
-R53
+R56
 32
 R10
 R11
@@ -522,7 +522,7 @@ L54
 VAW?gT[X?^Qo62B2m=<zHM3
 R8
 32
-R54
+R57
 R10
 R11
 !s100 COCzcVGjmdVD33m[eC0Q93
@@ -533,8 +533,8 @@ R2
 R3
 R4
 R5
-Z57 8F:/workspaces/Quartus/Final/regs.vhd
-Z58 FF:/workspaces/Quartus/Final/regs.vhd
+Z60 8F:/workspaces/Quartus/Final/regs.vhd
+Z61 FF:/workspaces/Quartus/Final/regs.vhd
 l0
 L223
 VGLn<:^i[XiZk9E6Ro@TZZ2
@@ -567,8 +567,8 @@ R2
 R3
 R4
 R5
-R57
-R58
+R60
+R61
 l0
 L109
 VO;zND[06l_BIm7]0KVDU<0
@@ -601,8 +601,8 @@ R2
 R3
 R4
 R5
-R57
-R58
+R60
+R61
 l0
 L18
 Vafk[m=XH=cH>ECE7bXiA:2
@@ -635,8 +635,8 @@ R2
 R3
 R4
 R5
-R57
-R58
+R60
+R61
 l0
 L172
 V6FeC>d136_eWD[RJZMXDf1
@@ -664,54 +664,54 @@ R11
 !s100 mz`fA7>SS;c>F@[WCOl]m1
 Estimulator
 R43
-Z59 w1244834006
+Z62 w1244834006
 R45
 R34
-Z60 DPx4 ieee 16 std_logic_textio 0 22 8YS?iX`WD1REQG`ZRYQGB2
+Z63 DPx4 ieee 16 std_logic_textio 0 22 8YS?iX`WD1REQG`ZRYQGB2
 R17
 R4
 R5
-Z61 8F:/workspaces/Quartus/Final/testbench/stimulator.vhd
-Z62 FF:/workspaces/Quartus/Final/testbench/stimulator.vhd
+Z64 8F:/workspaces/Quartus/Final/testbench/stimulator.vhd
+Z65 FF:/workspaces/Quartus/Final/testbench/stimulator.vhd
 l0
 L21
 VlL:aS^:OX1=YAfi@I?`j>0
-!s100 Pi0BeD8jzmKRf@UzPicm42
 R8
 R43
 32
 R10
 R11
+!s100 Pi0BeD8jzmKRf@UzPicm42
 Abehavior
 R45
 R34
-R60
+R63
 R17
 R4
-Z63 DEx4 work 10 stimulator 0 22 lL:aS^:OX1=YAfi@I?`j>0
+DEx4 work 10 stimulator 0 22 lL:aS^:OX1=YAfi@I?`j>0
 l40
 L36
-Z64 VePU`2zcXfUMZZK2XeCco=1
-Z65 !s100 Xjk_aTY<^f=EgZ96Q6lQz1
+VePU`2zcXfUMZZK2XeCco=1
 R8
 32
-R48
-Z66 Mx4 4 ieee 11 numeric_std
-Z67 Mx3 4 ieee 16 std_logic_textio
 R49
-R50
+Mx4 4 ieee 11 numeric_std
+Mx3 4 ieee 16 std_logic_textio
+R52
+R53
 R10
 R11
+!s100 Xjk_aTY<^f=EgZ96Q6lQz1
 Etestmain
 R24
-Z68 w1244761346
+Z66 w1244761346
 R34
 R2
 R3
 R4
-Z69 dF:\workspaces\Quartus\CRCcheck\testbench
-Z70 8F:/workspaces/Quartus/CRCcheck/testbench/CRCcheck_tb.vhd
-Z71 FF:/workspaces/Quartus/CRCcheck/testbench/CRCcheck_tb.vhd
+Z67 dF:\workspaces\Quartus\CRCcheck\testbench
+Z68 8F:/workspaces/Quartus/CRCcheck/testbench/CRCcheck_tb.vhd
+Z69 FF:/workspaces/Quartus/CRCcheck/testbench/CRCcheck_tb.vhd
 l0
 L18
 V@MEKlQDW1;YeYE7fKE^bf1
@@ -743,10 +743,10 @@ Ptext_util
 R9
 R34
 R4
-Z72 w1244835995
+Z70 w1244835995
 R5
-Z73 8F:/workspaces/Quartus/Final/testbench/text_util.vhd
-Z74 FF:/workspaces/Quartus/Final/testbench/text_util.vhd
+Z71 8F:/workspaces/Quartus/Final/testbench/text_util.vhd
+Z72 FF:/workspaces/Quartus/Final/testbench/text_util.vhd
 l0
 L6
 Vgiz=3@@RhAoLVOm]KG>_R3
@@ -776,13 +776,13 @@ nbody
 !s100 jWj^39^W^jGg5]i5bmDCL3
 Eus
 R9
-Z75 w1244835309
+Z73 w1244835309
 R2
 R3
 R4
 R5
-Z76 8F:/workspaces/Quartus/Final/us.vhd
-Z77 FF:/workspaces/Quartus/Final/us.vhd
+Z74 8F:/workspaces/Quartus/Final/us.vhd
+Z75 FF:/workspaces/Quartus/Final/us.vhd
 l0
 L17
 VOJYgQ6=>T`93[1gQfCOfY2
